@@ -43,7 +43,7 @@ async function connect() {
       throw new Error("Sunucu henüz hazır değil");
 
     document.getElementById("status").textContent = "NOVA Music açılıyor...";
-    location.replace(url);
+    location.replace(url + location.search + location.hash);
 
   } catch (e) {
     document.getElementById("status").textContent =
