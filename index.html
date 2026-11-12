@@ -1,59 +1,1843 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0d0f">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<link rel="apple-touch-icon" href="/logo.svg">
 <title>NOVA Music</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body {
-  background:#0c0d0f;
-  color:white;
-  font-family:Arial,sans-serif;
-  display:grid;
-  place-items:center;
-  min-height:90vh;
-  text-align:center;
-}
-p {color:#aaa}
+:root{--bg:#0c0d0f;--panel:#16181b;--line:#25282c;--tx:#fff;--mut:#8b9096;--g:#1ed760;--gd:#0f2a1a;--nav:68px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font-family:Outfit,system-ui,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+svg.f{fill:currentColor;stroke:none}
+
+#notes{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#notes span{position:absolute;bottom:-40px;color:#fff;opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:.10}85%{opacity:.07}100%{transform:translateY(-115vh) rotate(35deg);opacity:0}}
+
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(14px + env(safe-area-inset-top)) 18px 14px}
+.bar{display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;justify-content:flex-start;text-align:left;gap:0;flex:1;min-width:0;white-space:nowrap;font-weight:800;font-size:clamp(24px,7.2vw,30px);line-height:1.1;letter-spacing:.08em}
+.logo svg{color:var(--g);width:34px;height:34px}
+.logo img{width:48px;height:48px}
+.logo em{font-style:normal;color:var(--g)}
+.ib{width:40px;height:40px;display:grid;place-items:center}
+.st{display:flex;align-items:center;gap:8px;color:var(--g);font-size:13px;letter-spacing:.12em;font-weight:500}
+.st i{width:9px;height:9px;border-radius:50%;background:var(--g)}
+.st.off{color:#ff5d5d}.st.off i{background:#ff5d5d}
+.sbox{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s}
+.sbox.open{grid-template-rows:1fr}
+.sbox>div{overflow:hidden}
+.sbox input{width:100%;margin-top:14px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--tx);font:inherit;font-size:16px;outline:0}
+.sbox input:focus{border-color:var(--g)}
+
+main{position:relative;z-index:1;padding:0 18px calc(var(--nav) + 170px + env(safe-area-inset-bottom))}
+.view{display:none}.view.on{display:block}
+#hero{padding:34px 0 40px;transition:opacity .1s}
+.eb{color:var(--g);font-size:13px;letter-spacing:.2em;font-weight:500}
+#hero h1{margin-top:22px;font-size:clamp(38px,12.5vw,58px);line-height:1.12;font-weight:800;letter-spacing:-.04em}
+#hero h1 span{display:block;color:#9a9a9a}
+.sec{display:flex;align-items:flex-end;justify-content:space-between;margin-top:22px}
+.sec h2{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-top:6px}
+.sec button{color:var(--g);font-size:14px;font-weight:600;letter-spacing:.04em;padding:6px 0;display:flex;gap:6px;align-items:center}
+.cnt{color:var(--mut);font-size:17px;margin:20px 0 10px}
+.empty{color:var(--mut);font-size:15px;padding:14px;border:1px dashed var(--line);border-radius:14px}
+
+.row{display:flex;align-items:center;gap:14px;padding:10px 8px;border-radius:16px;border:1.5px solid transparent;cursor:pointer}
+.row.on{background:var(--gd);border-color:var(--g)}
+.row img{width:72px;height:72px;border-radius:12px;object-fit:cover;background:var(--line);flex:none}
+.row.on img{border:2px solid var(--g)}
+.row .t{flex:1;min-width:0}
+.row b{display:block;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small{display:block;margin-top:5px;font-size:16px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.on small{color:#a9b5ad;font-weight:500}
+.hb,.pl{width:42px;height:42px;display:grid;place-items:center;flex:none}
+.hb{color:#d5d8dc}.hb.on{color:var(--g)}.hb.on svg{fill:var(--g)}
+.pl{color:var(--g)}.pl svg{width:26px;height:26px}
+
+#player{position:fixed;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom));z-index:30;background:#17191c;border-top:1px solid var(--line);padding:12px 18px 14px;transform:translateY(130%);transition:transform .35s cubic-bezier(.2,.8,.2,1);touch-action:pan-x}
+#player.show{transform:none}
+.pr{display:flex;align-items:center;gap:14px}
+#pArt{width:66px;height:66px;border-radius:12px;object-fit:cover;background:var(--line);flex:none}
+.pt{flex:1;min-width:0}
+.mq{overflow:hidden;white-space:nowrap;font-weight:600;font-size:18px}
+.mq span{display:inline-block}
+.mq.go span{animation:mq var(--d,6s) linear infinite alternate}
+@keyframes mq{0%,15%{transform:none}85%,100%{transform:translateX(var(--s))}}
+#pArtist{color:var(--mut);font-size:15px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctl{display:flex;align-items:center;justify-content:center;gap:76px;margin-top:6px}
+.ctl button{width:44px;height:44px;display:grid;place-items:center}
+#pPlay{width:54px;height:54px;border-radius:50%;background:var(--g);color:#06140b}
+#pPlay svg{width:24px;height:24px}
+.pg{display:flex;align-items:center;gap:12px;margin-top:6px;font-size:14px;color:var(--mut)}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--g) var(--p,0%),#3a3d42 var(--p,0%));outline:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--g)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border:0;border-radius:50%;background:var(--g)}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;background:#0f1012;border-top:1px solid var(--line)}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--mut);font-size:12px}
+nav button.on{color:var(--g)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:28px;line-height:1.6;font-size:15px;color:var(--mut)}
+.card h3{color:var(--tx);font-size:22px;margin-bottom:8px}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0;padding-top:0}
+.srow.col{flex-direction:column;align-items:flex-start}
+.srow b{display:block;color:var(--tx);font-size:16px;font-weight:600}
+.srow small{color:var(--mut);font-size:13px}
+.sw{display:flex;gap:12px}
+.sw button{width:32px;height:32px;border-radius:50%;border:2px solid transparent}
+.sw button.on{border-color:#fff}
+.tg{width:50px;height:30px;border-radius:15px;background:#3a3d42;position:relative;flex:none;transition:background .2s}
+.tg::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.tg.on{background:var(--g)}.tg.on::after{transform:translateX(20px)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chips button{padding:8px 14px;border-radius:20px;border:1px solid var(--line);color:var(--mut);font-size:14px}
+.chips button.on{border-color:var(--g);color:var(--g)}
+.danger{width:100%;padding:14px;border-radius:14px;border:1px solid #5a2a2a;color:#ff6b6b;font-weight:600}
+.btn{width:100%;padding:14px;border-radius:14px;background:var(--g);color:#06140b;font-weight:700;font-size:16px;margin-top:12px}
+.btn:disabled{opacity:.5}
+.tin{width:100%;margin-top:12px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--tx);font:inherit;font-size:16px;outline:0}
+.tin:focus{border-color:var(--g)}
+@media (prefers-reduced-motion:reduce){#notes span,.mq.go span{animation:none}}
+
+/* Üst başlık */
+.logo{justify-content:flex-start;min-width:0;font-size:clamp(22px,7vw,30px);letter-spacing:.07em;line-height:1;white-space:nowrap;text-align:left}
+header .st+small{font-size:11px!important;letter-spacing:.06em;line-height:1;color:var(--mut)!important}
+
+</style>
+<script>/*nova-tema-v1*/(function(){try{var t=localStorage.getItem('nova_theme');if(/^(sakura|cyber|matrix|noel)$/.test(t))document.documentElement.setAttribute('data-theme',t)}catch(e){}})();</script>
+<style>
+/*nova-tema-css*/
+.ver{font-size:11px;color:var(--mut);letter-spacing:.04em}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tcard{display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:16px;border:1.5px solid var(--line);background:rgba(255,255,255,.03);text-align:left;color:var(--tx)}
+.tcard:active{transform:scale(.97)}
+.tcard b{display:flex;align-items:center;justify-content:space-between;padding:0 4px 2px;font-size:14px;font-weight:600}
+.tcard b::after{content:'';width:16px;height:16px;border-radius:50%;border:1.5px solid var(--mut)}
+.tcard.on{border-color:var(--g)}
+.tcard.on b::after{border-color:var(--g);background:var(--g);box-shadow:inset 0 0 0 3px var(--panel)}
+.tprev{position:relative;display:block;height:70px;border-radius:11px;overflow:hidden}
+.tprev::after{content:'';position:absolute;inset:0}
+.thint{display:block;margin-top:12px;color:var(--mut);font-size:12.5px;line-height:1.45}
+.tp-default{background:radial-gradient(circle at 20% 80%,rgba(30,215,96,.3),transparent 55%),linear-gradient(160deg,#1a1c20,#0c0d0f)}
+.tp-default::after{background:linear-gradient(#1ed760,#1ed760) 12px 14px/44px 6px no-repeat,linear-gradient(#34383d,#34383d) 12px 30px/70% 5px no-repeat,linear-gradient(#34383d,#34383d) 12px 44px/50% 5px no-repeat}
+.tp-sakura{background:radial-gradient(circle at 80% 18%,rgba(255,143,184,.5),transparent 48%),linear-gradient(160deg,#3d1b2e,#1a0f16)}
+.tp-sakura::after{background:radial-gradient(circle at 18% 30%,#ffb7d1 0 3px,transparent 3.6px),radial-gradient(circle at 42% 66%,#ff9cc2 0 2.4px,transparent 3px),radial-gradient(circle at 63% 28%,#ffd6e6 0 3.2px,transparent 3.8px),radial-gradient(circle at 82% 70%,#ffb7d1 0 2.6px,transparent 3.2px),radial-gradient(circle at 30% 84%,#ffd6e6 0 2px,transparent 2.6px)}
+.tp-cyber{background:radial-gradient(circle at 15% 90%,rgba(255,43,214,.45),transparent 50%),radial-gradient(circle at 90% 10%,rgba(0,229,255,.4),transparent 48%),linear-gradient(135deg,#1a0b3d,#071a2e)}
+.tp-cyber::after{background:linear-gradient(90deg,transparent,#00e5ff,transparent) 0 70%/100% 2px no-repeat,repeating-linear-gradient(90deg,rgba(0,229,255,.16) 0 1px,transparent 1px 12px)}
+.tp-matrix{background:#000}
+.tp-matrix::after{content:'1 0 7 Z 4 9 A 5 3 1 0 8 E 2 6 K 0 1 9 X 3 7 0 B 5 2 1 8 4 N 0 6 1 3 9 7 2 C 0 5 8 1 4 Z 6 3 0 9';padding:3px 6px;font:700 10px/11px monospace;color:#00ff5a;word-break:break-all;letter-spacing:2px;-webkit-mask-image:linear-gradient(#000,rgba(0,0,0,.15));mask-image:linear-gradient(#000,rgba(0,0,0,.15))}
+.tp-noel{background:linear-gradient(160deg,#0f3b2a,#2a0b12)}
+.tp-noel::after{background:radial-gradient(circle,#ff4d5e 0 2.5px,transparent 3.2px) 0 0/28px 7px repeat-x,radial-gradient(circle,#ffd166 0 2.5px,transparent 3.2px) 14px 0/28px 7px repeat-x,radial-gradient(circle at 20% 40%,#fff 0 1.6px,transparent 2.2px),radial-gradient(circle at 48% 62%,#fff 0 2px,transparent 2.6px),radial-gradient(circle at 72% 44%,#fff 0 1.4px,transparent 2px),radial-gradient(circle at 86% 78%,#fff 0 2px,transparent 2.6px),radial-gradient(circle at 34% 84%,#fff 0 1.6px,transparent 2.2px)}
+#themeFx{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+html[data-theme] body{background:transparent}
+html[data-theme] #notes{display:none}
+html[data-theme]::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none}
+html[data-theme] header{background:var(--hbg);border-bottom-color:var(--line)}
+html[data-theme] nav{background:var(--nbg);border-top-color:var(--line)}
+html[data-theme] #player{background:var(--pbg);border-top-color:var(--line)}
+html[data-theme] #notifPanel{background:var(--ovl)!important}
+html[data-theme] #zoomKnob{background:var(--g)!important}
+html[data-theme] #hero h1 span{color:var(--sub)}
+html[data-theme] #sw{opacity:.35;pointer-events:none}
+html[data-theme] #novaLists{background:linear-gradient(160deg,var(--t1),transparent 85%),var(--panel)!important;border:1px solid var(--line)!important}
+html[data-theme] #novaFavs{background:linear-gradient(160deg,var(--t2),transparent 85%),var(--panel)!important;border:1px solid var(--line)!important}
+html[data-theme] #novaLists>div:first-child,html[data-theme] #novaFavs>div:first-child{color:var(--g)!important}
+html[data-theme] [class*="nv-c"]>button:first-child{background:linear-gradient(90deg,var(--g),var(--ac))!important;color:#06140b!important}
+html[data-theme] .nv-track{--a:var(--t1);--b:var(--g)}
+html[data-theme] .nv-tf{--a:var(--t2)}
+html[data-theme=sakura]{--bg:#1a0f16;--panel:rgba(50,26,42,.84);--line:rgba(255,170,205,.18);--tx:#fff4f8;--mut:#cfa6b8;--g:#ff8fb8!important;--gd:#4a2234!important;--ac:#e0568f;--sub:#e8b6cb;--hbg:rgba(26,15,22,.93);--nbg:rgba(26,15,22,.97);--pbg:rgba(44,22,35,.97);--sheet:#2a1522;--ovl:rgba(18,7,13,.97);--t1:rgba(255,143,184,.22);--t2:rgba(224,86,143,.20)}
+html[data-theme=cyber]{--bg:#0a0614;--panel:rgba(20,11,44,.82);--line:rgba(0,229,255,.22);--tx:#eaf6ff;--mut:#8f9bc9;--g:#00e5ff!important;--gd:#06303a!important;--ac:#b24bff;--sub:#b78cff;--hbg:rgba(10,6,24,.92);--nbg:rgba(10,6,24,.97);--pbg:rgba(16,9,38,.97);--sheet:#140a30;--ovl:rgba(8,4,20,.97);--t1:rgba(0,229,255,.16);--t2:rgba(255,43,214,.16)}
+html[data-theme=cyber] header{box-shadow:0 1px 0 rgba(0,229,255,.35),0 8px 22px rgba(178,75,255,.16)}
+html[data-theme=cyber] nav{box-shadow:0 -1px 0 rgba(255,43,214,.30)}
+html[data-theme=cyber] .card{box-shadow:0 0 18px rgba(178,75,255,.10)}
+html[data-theme=cyber] .logo em{text-shadow:0 0 12px rgba(0,229,255,.7)}
+html[data-theme=matrix]{--bg:#000;--panel:rgba(0,16,5,.84);--line:rgba(0,255,90,.22);--tx:#c8ffd6;--mut:#3fae62;--g:#00ff5a!important;--gd:#00240d!important;--ac:#00b84a;--sub:#1f9a4a;--hbg:rgba(0,0,0,.92);--nbg:rgba(0,0,0,.97);--pbg:rgba(0,10,3,.97);--sheet:#021208;--ovl:rgba(0,6,2,.97);--t1:rgba(0,255,90,.13);--t2:rgba(0,255,90,.08)}
+html[data-theme=matrix] #themeFx{opacity:.7}
+html[data-theme=matrix] .logo em{text-shadow:0 0 10px rgba(0,255,90,.6)}
+html[data-theme=matrix] .card{box-shadow:0 0 14px rgba(0,255,90,.07)}
+html[data-theme=noel]{--bg:#0a1c16;--panel:rgba(14,40,31,.84);--line:rgba(255,255,255,.15);--tx:#fff8f0;--mut:#b9d0c3;--g:#3fdc8a!important;--gd:#14392a!important;--ac:#e63946;--sub:#ffd7a8;--hbg:rgba(8,26,19,.92);--nbg:rgba(8,26,19,.97);--pbg:rgba(14,36,28,.97);--sheet:#10281f;--ovl:rgba(5,16,12,.97);--t1:rgba(63,220,138,.16);--t2:rgba(230,57,70,.20)}
+html[data-theme=noel] .logo em{color:#ff4d5e}
+html[data-theme=noel] #pPlay{background:#e63946;color:#fff}
+html[data-theme=noel] header::before,html[data-theme=noel] header::after{content:'';position:absolute;left:0;right:0;bottom:-7px;height:8px;pointer-events:none;background-repeat:repeat-x;background-size:44px 8px;animation:nvl 1.8s ease-in-out infinite alternate}
+html[data-theme=noel] header::after{background-image:radial-gradient(circle,#ff4d5e 0 2.6px,transparent 3.4px),radial-gradient(circle,#ffd166 0 2.6px,transparent 3.4px);background-position:0 0,22px 0}
+html[data-theme=noel] header::before{background-image:radial-gradient(circle,#3fdc8a 0 2.6px,transparent 3.4px),radial-gradient(circle,#4cc9f0 0 2.6px,transparent 3.4px);background-position:11px 0,33px 0;animation-delay:.9s}
+@keyframes nvl{from{opacity:.45}to{opacity:1}}
+html.nv-hid[data-theme] header::before,html.nv-hid[data-theme] header::after,html.nv-hid #notes span,html.nv-hid .mq.go span{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){html[data-theme] header::before,html[data-theme] header::after{animation:none}}
+
+html[data-theme=sakura]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20220%22%3E%3Cdefs%3E%3Cg%20id%3D%22f%22%3E%3Cellipse%20cy%3D%22-6%22%20rx%3D%224%22%20ry%3D%226%22%20transform%3D%22rotate(0)%22%2F%3E%3Cellipse%20cy%3D%22-6%22%20rx%3D%224%22%20ry%3D%226%22%20transform%3D%22rotate(72)%22%2F%3E%3Cellipse%20cy%3D%22-6%22%20rx%3D%224%22%20ry%3D%226%22%20transform%3D%22rotate(144)%22%2F%3E%3Cellipse%20cy%3D%22-6%22%20rx%3D%224%22%20ry%3D%226%22%20transform%3D%22rotate(216)%22%2F%3E%3Cellipse%20cy%3D%22-6%22%20rx%3D%224%22%20ry%3D%226%22%20transform%3D%22rotate(288)%22%2F%3E%3Ccircle%20r%3D%222.2%22%20fill%3D%22%23ffe08a%22%2F%3E%3C%2Fg%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M302%2012C240%2026%20196%2066%20132%2094S52%20150%2018%20196%22%20stroke%3D%22%233b2230%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M214%2052C206%2086%20186%20108%20160%20132M126%2098C104%2080%2082%2072%2052%2070M92%20124C84%20150%2070%20164%2052%20172%22%20stroke%3D%22%233b2230%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(276%2022)%20scale(1.1)%20rotate(60)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(246%2034)%20scale(0.9)%20rotate(66)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(222%2052)%20scale(1.2)%20rotate(42)%22%20fill%3D%22%23ffd6e6%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(198%2070)%20scale(0.9)%20rotate(18)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(170%2086)%20scale(1.1)%20rotate(38)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(142%2098)%20scale(1.2)%20rotate(58)%22%20fill%3D%22%23ffd6e6%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(118%20108)%20scale(0.9)%20rotate(34)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(96%20124)%20scale(1.1)%20rotate(24)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(70%20142)%20scale(1)%20rotate(58)%22%20fill%3D%22%23ffd6e6%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(46%20166)%20scale(1.2)%20rotate(34)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(24%20190)%20scale(0.9)%20rotate(24)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(212%2084)%20scale(0.9)%20rotate(44)%22%20fill%3D%22%23ffd6e6%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(196%20108)%20scale(1.1)%20rotate(4)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(168%20124)%20scale(0.9)%20rotate(24)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(104%2084)%20scale(1.1)%20rotate(8)%22%20fill%3D%22%23ffd6e6%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(72%2072)%20scale(0.9)%20rotate(0)%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Cuse%20href%3D%22%23f%22%20transform%3D%22translate(84%20150)%20scale(1)%20rotate(12)%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Ccircle%20cx%3D%22232%22%20cy%3D%2226%22%20r%3D%223%22%20fill%3D%22%23ff8fb8%22%2F%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%2264%22%20r%3D%223%22%20fill%3D%22%23ffb7d1%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22104%22%20r%3D%222.6%22%20fill%3D%22%23ff9cc2%22%2F%3E%3Ccircle%20cx%3D%22130%22%20cy%3D%22150%22%20r%3D%222.6%22%20fill%3D%22%23ffb7d1%22%2F%3E%3C%2Fsvg%3E") right -12px top 46px/min(66vw,290px) auto no-repeat,radial-gradient(120% 55% at 90% 0%,rgba(255,150,190,.22),transparent 60%),radial-gradient(90% 50% at 0% 100%,rgba(255,120,170,.14),transparent 60%),linear-gradient(180deg,#2a1422 0%,#1a0f16 55%,#12090e 100%)}
+html[data-theme=cyber]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20400%20130%22%3E%3Cdefs%3E%3Cpattern%20id%3D%22w%22%20width%3D%2211%22%20height%3D%2214%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Crect%20x%3D%222%22%20y%3D%223%22%20width%3D%222.4%22%20height%3D%223.2%22%20fill%3D%22%2300e5ff%22%20opacity%3D%22.38%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%229%22%20width%3D%222%22%20height%3D%222.6%22%20fill%3D%22%23ff2bd6%22%20opacity%3D%22.32%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20x%3D%220%22%20y%3D%2272%22%20width%3D%2234%22%20height%3D%2258%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%2272%22%20width%3D%2234%22%20height%3D%2258%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%2244%22%20width%3D%2226%22%20height%3D%2286%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%2244%22%20width%3D%2226%22%20height%3D%2286%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%2254%22%20y%3D%2266%22%20width%3D%2238%22%20height%3D%2264%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%2254%22%20y%3D%2266%22%20width%3D%2238%22%20height%3D%2264%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%2290%22%20y%3D%2226%22%20width%3D%2230%22%20height%3D%22104%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%2290%22%20y%3D%2226%22%20width%3D%2230%22%20height%3D%22104%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22118%22%20y%3D%2258%22%20width%3D%2224%22%20height%3D%2272%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22118%22%20y%3D%2258%22%20width%3D%2224%22%20height%3D%2272%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22140%22%20y%3D%2238%22%20width%3D%2240%22%20height%3D%2292%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22140%22%20y%3D%2238%22%20width%3D%2240%22%20height%3D%2292%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22178%22%20y%3D%2270%22%20width%3D%2228%22%20height%3D%2260%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22178%22%20y%3D%2270%22%20width%3D%2228%22%20height%3D%2260%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22204%22%20y%3D%2218%22%20width%3D%2234%22%20height%3D%22112%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22204%22%20y%3D%2218%22%20width%3D%2234%22%20height%3D%22112%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22236%22%20y%3D%2252%22%20width%3D%2226%22%20height%3D%2278%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22236%22%20y%3D%2252%22%20width%3D%2226%22%20height%3D%2278%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22260%22%20y%3D%2234%22%20width%3D%2240%22%20height%3D%2296%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22260%22%20y%3D%2234%22%20width%3D%2240%22%20height%3D%2296%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22298%22%20y%3D%2264%22%20width%3D%2230%22%20height%3D%2266%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22298%22%20y%3D%2264%22%20width%3D%2230%22%20height%3D%2266%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22326%22%20y%3D%2230%22%20width%3D%2234%22%20height%3D%22100%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22326%22%20y%3D%2230%22%20width%3D%2234%22%20height%3D%22100%22%20fill%3D%22url(%23w)%22%2F%3E%3Crect%20x%3D%22358%22%20y%3D%2256%22%20width%3D%2242%22%20height%3D%2274%22%20fill%3D%22%230d0826%22%2F%3E%3Crect%20x%3D%22358%22%20y%3D%2256%22%20width%3D%2242%22%20height%3D%2274%22%20fill%3D%22url(%23w)%22%2F%3E%3Cpath%20d%3D%22M49%2066V44M204%2018V2M274%2034V16M341%2030V12%22%20stroke%3D%22%23ff2bd6%22%20stroke-width%3D%221.2%22%20opacity%3D%22.7%22%2F%3E%3Crect%20x%3D%2296%22%20y%3D%2246%22%20width%3D%2218%22%20height%3D%226%22%20fill%3D%22none%22%20stroke%3D%22%2300e5ff%22%20stroke-width%3D%221.2%22%2F%3E%3Crect%20x%3D%22262%22%20y%3D%2252%22%20width%3D%2222%22%20height%3D%225%22%20fill%3D%22none%22%20stroke%3D%22%23ff2bd6%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fsvg%3E") center bottom 66px/min(100%,460px) auto no-repeat,repeating-linear-gradient(0deg,rgba(0,229,255,.035) 0 1px,transparent 1px 4px),radial-gradient(80% 45% at 100% 0%,rgba(0,229,255,.20),transparent 62%),radial-gradient(90% 50% at 0% 100%,rgba(255,43,214,.20),transparent 62%),linear-gradient(180deg,#0f0728 0%,#0a0614 60%,#070412 100%)}
+html[data-theme=matrix]::before{background:radial-gradient(100% 55% at 50% 0%,rgba(0,255,90,.10),transparent 65%),#000}
+html[data-theme=noel]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20170%22%3E%3Cg%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M296%208L36%20128%22%20stroke%3D%22%234a2f1d%22%20stroke-width%3D%223.5%22%2F%3E%3Cpath%20d%3D%22M292%2010l-22%2028M292%2010l10%2031M292%2010l-12%20-13M282%2015l-22%2027M282%2015l10%2031M282%2015l-12%20-13M271%2019l-22%2027M271%2019l10%2031M271%2019l-12%20-13M261%2024l-20%2026M261%2024l10%2029M261%2024l-11%20-12M250%2029l-23%2028M250%2029l11%2032M250%2029l-12%20-13M240%2033l-23%2028M240%2033l11%2032M240%2033l-12%20-13M230%2038l-19%2025M230%2038l9%2028M230%2038l-10%20-11M219%2043l-22%2027M219%2043l10%2031M219%2043l-11%20-13M209%2047l-19%2025M209%2047l9%2028M209%2047l-10%20-11M198%2052l-19%2025M198%2052l9%2028M198%2052l-10%20-11M188%2057l-21%2027M188%2057l10%2030M188%2057l-11%20-12M177%2061l-18%2024M177%2061l9%2027M177%2061l-10%20-11M167%2066l-18%2024M167%2066l9%2027M167%2066l-10%20-11M157%2071l-18%2024M157%2071l9%2027M157%2071l-9%20-10M146%2075l-18%2024M146%2075l9%2027M146%2075l-10%20-11M136%2080l-19%2025M136%2080l9%2028M136%2080l-10%20-11M125%2085l-17%2023M125%2085l8%2026M125%2085l-9%20-10M115%2089l-17%2023M115%2089l8%2026M115%2089l-9%20-10M105%2094l-18%2024M105%2094l8%2027M105%2094l-9%20-10M94%2099l-16%2022M94%2099l8%2025M94%2099l-8%20-9M84%20103l-14%2021M84%20103l7%2023M84%20103l-8%20-8M73%20108l-17%2023M73%20108l8%2026M73%20108l-9%20-10M63%20113l-17%2023M63%20113l8%2026M63%20113l-9%20-10M52%20117l-13%2020M52%20117l6%2022M52%20117l-7%20-7M42%20122l-14%2021M42%20122l7%2023M42%20122l-7%20-8%22%20stroke%3D%22%230f5a3a%22%20stroke-width%3D%223.4%22%2F%3E%3Cpath%20d%3D%22M292%2010l-14%2018M292%2010l7%2018M282%2015l-14%2018M282%2015l7%2018M271%2019l-14%2018M271%2019l7%2018M261%2024l-13%2017M261%2024l6%2017M250%2029l-14%2018M250%2029l7%2018M240%2033l-15%2018M240%2033l7%2019M230%2038l-12%2016M230%2038l6%2016M219%2043l-14%2018M219%2043l7%2018M209%2047l-12%2016M209%2047l6%2016M198%2052l-12%2016M198%2052l6%2016M188%2057l-13%2017M188%2057l7%2017M177%2061l-12%2016M177%2061l6%2016M167%2066l-12%2016M167%2066l6%2016M157%2071l-11%2015M157%2071l6%2015M146%2075l-12%2016M146%2075l6%2016M136%2080l-12%2016M136%2080l6%2016M125%2085l-11%2015M125%2085l5%2015M115%2089l-11%2015M115%2089l5%2015M105%2094l-11%2015M105%2094l6%2015M94%2099l-10%2014M94%2099l5%2014M84%20103l-9%2013M84%20103l5%2013M73%20108l-11%2015M73%20108l5%2015M63%20113l-11%2015M63%20113l5%2015M52%20117l-8%2012M52%20117l4%2012M42%20122l-9%2013M42%20122l4%2013%22%20stroke%3D%22%232fa86a%22%20stroke-width%3D%222.4%22%2F%3E%3C%2Fg%3E%3Cg%3E%3Ccircle%20cx%3D%22237%22%20cy%3D%2258%22%20r%3D%227%22%20fill%3D%22%23e63946%22%2F%3E%3Ccircle%20cx%3D%22167%22%20cy%3D%2292%22%20r%3D%226%22%20fill%3D%22%23ffd166%22%2F%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%22124%22%20r%3D%227%22%20fill%3D%22%23e63946%22%2F%3E%3Ccircle%20cx%3D%22235%22%20cy%3D%2255%22%20r%3D%222%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Ccircle%20cx%3D%22165%22%20cy%3D%2289%22%20r%3D%221.8%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%22121%22%20r%3D%222%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Cg%20fill%3D%22%23e63946%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2250%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22206%22%20cy%3D%2254%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22131%22%20cy%3D%2282%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22137%22%20cy%3D%2286%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22112%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2266%22%20cy%3D%22116%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E") right -8px top 58px/min(60vw,250px) auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20170%22%3E%3Cg%20transform%3D%22rotate(180%20150%2085)%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M296%208L36%20128%22%20stroke%3D%22%234a2f1d%22%20stroke-width%3D%223.5%22%2F%3E%3Cpath%20d%3D%22M292%2010l-22%2028M292%2010l10%2031M292%2010l-12%20-13M282%2015l-22%2027M282%2015l10%2031M282%2015l-12%20-13M271%2019l-22%2027M271%2019l10%2031M271%2019l-12%20-13M261%2024l-20%2026M261%2024l10%2029M261%2024l-11%20-12M250%2029l-23%2028M250%2029l11%2032M250%2029l-12%20-13M240%2033l-23%2028M240%2033l11%2032M240%2033l-12%20-13M230%2038l-19%2025M230%2038l9%2028M230%2038l-10%20-11M219%2043l-22%2027M219%2043l10%2031M219%2043l-11%20-13M209%2047l-19%2025M209%2047l9%2028M209%2047l-10%20-11M198%2052l-19%2025M198%2052l9%2028M198%2052l-10%20-11M188%2057l-21%2027M188%2057l10%2030M188%2057l-11%20-12M177%2061l-18%2024M177%2061l9%2027M177%2061l-10%20-11M167%2066l-18%2024M167%2066l9%2027M167%2066l-10%20-11M157%2071l-18%2024M157%2071l9%2027M157%2071l-9%20-10M146%2075l-18%2024M146%2075l9%2027M146%2075l-10%20-11M136%2080l-19%2025M136%2080l9%2028M136%2080l-10%20-11M125%2085l-17%2023M125%2085l8%2026M125%2085l-9%20-10M115%2089l-17%2023M115%2089l8%2026M115%2089l-9%20-10M105%2094l-18%2024M105%2094l8%2027M105%2094l-9%20-10M94%2099l-16%2022M94%2099l8%2025M94%2099l-8%20-9M84%20103l-14%2021M84%20103l7%2023M84%20103l-8%20-8M73%20108l-17%2023M73%20108l8%2026M73%20108l-9%20-10M63%20113l-17%2023M63%20113l8%2026M63%20113l-9%20-10M52%20117l-13%2020M52%20117l6%2022M52%20117l-7%20-7M42%20122l-14%2021M42%20122l7%2023M42%20122l-7%20-8%22%20stroke%3D%22%230f5a3a%22%20stroke-width%3D%223.4%22%2F%3E%3Cpath%20d%3D%22M292%2010l-14%2018M292%2010l7%2018M282%2015l-14%2018M282%2015l7%2018M271%2019l-14%2018M271%2019l7%2018M261%2024l-13%2017M261%2024l6%2017M250%2029l-14%2018M250%2029l7%2018M240%2033l-15%2018M240%2033l7%2019M230%2038l-12%2016M230%2038l6%2016M219%2043l-14%2018M219%2043l7%2018M209%2047l-12%2016M209%2047l6%2016M198%2052l-12%2016M198%2052l6%2016M188%2057l-13%2017M188%2057l7%2017M177%2061l-12%2016M177%2061l6%2016M167%2066l-12%2016M167%2066l6%2016M157%2071l-11%2015M157%2071l6%2015M146%2075l-12%2016M146%2075l6%2016M136%2080l-12%2016M136%2080l6%2016M125%2085l-11%2015M125%2085l5%2015M115%2089l-11%2015M115%2089l5%2015M105%2094l-11%2015M105%2094l6%2015M94%2099l-10%2014M94%2099l5%2014M84%20103l-9%2013M84%20103l5%2013M73%20108l-11%2015M73%20108l5%2015M63%20113l-11%2015M63%20113l5%2015M52%20117l-8%2012M52%20117l4%2012M42%20122l-9%2013M42%20122l4%2013%22%20stroke%3D%22%232fa86a%22%20stroke-width%3D%222.4%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate(180%20150%2085)%22%3E%3Ccircle%20cx%3D%22237%22%20cy%3D%2258%22%20r%3D%227%22%20fill%3D%22%23e63946%22%2F%3E%3Ccircle%20cx%3D%22167%22%20cy%3D%2292%22%20r%3D%226%22%20fill%3D%22%23ffd166%22%2F%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%22124%22%20r%3D%227%22%20fill%3D%22%23e63946%22%2F%3E%3Ccircle%20cx%3D%22235%22%20cy%3D%2255%22%20r%3D%222%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Ccircle%20cx%3D%22165%22%20cy%3D%2289%22%20r%3D%221.8%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%22121%22%20r%3D%222%22%20fill%3D%22%23fff%22%20opacity%3D%22.5%22%2F%3E%3Cg%20fill%3D%22%23e63946%22%3E%3Ccircle%20cx%3D%22200%22%20cy%3D%2250%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22206%22%20cy%3D%2254%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22131%22%20cy%3D%2282%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%22137%22%20cy%3D%2286%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22112%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2266%22%20cy%3D%22116%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E") left -8px bottom 74px/min(50vw,200px) auto no-repeat,radial-gradient(90% 50% at 50% 0%,rgba(255,209,102,.10),transparent 60%),linear-gradient(180deg,#0c2a1f 0%,#0a1c16 55%,#1b0b12 100%)}
 </style>
 </head>
 <body>
-<main>
-<h1>NOVA MUSIC</h1>
-<p id="status">Sunucu aranıyor...</p>
-</main>
-<script>
-const KEY = "sb_publishable_XPy0o9PDLBgukREOKQpG4A_AY3gJNs7";
-const API = "https://igcmeihdkxkczzgneioa.supabase.co/rest/v1/tunnel_status?select=url&id=eq.1";
+<div id="notes"></div>
 
-async function connect() {
-  try {
-    const r = await fetch(API, {
-      headers: { apikey: KEY },
-      cache: "no-store"
+<header>
+  <div class="bar">
+    <div class="logo"><span>NOVA <em>MUSIC</em></span></div>
+    <div style="display:flex;align-items:center;gap:14px"><div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><small class="ver">Sürüm 1.5.5</small></div><button id="bellBtn" aria-label="Bildirimler" style="display:none;position:relative;width:34px;height:34px;place-items:center"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span id="bellDot" style="display:none;position:absolute;top:3px;right:3px;width:10px;height:10px;border-radius:50%;background:#ff3b30"></span></button><button id="appRefresh" title="Uygulamayı yenile" aria-label="Uygulamayı yenile" style="display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;background:transparent;color:inherit;cursor:pointer"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button></div>
+  </div>
+  <div class="sbox" id="sBox"><div><input id="q" type="search" placeholder="Şarkı veya sanatçı ara" autocomplete="off"></div></div>
+</header>
+
+<main>
+  <section class="view on" id="v-home">
+    <div id="hero">
+      <div class="eb">YOUR MUSIC. YOUR WORLD.</div>
+      <h1>Müziğin <span>sınırlarını keşfet.</span></h1>
+    </div>
+    <div id="resWrap" hidden><div class="sec"><div><div class="eb">ARAMA</div><h2>Sonuçlar</h2></div></div><div id="res"></div></div>
+    <div class="sec"><div><div class="eb">NOVA SELECTION</div><h2>Trend Liste</h2></div></div>
+    <div class="cnt" id="cnt" style="display:none"></div>
+    <div id="trend" style="display:none"></div><div class="hrow" id="hTrend"></div>
+    <style>.hrow{display:flex;gap:12px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}.hc{flex:0 0 132px;min-width:0;cursor:pointer}.hc img{width:132px;height:132px;border-radius:14px;object-fit:cover;background:var(--panel);display:block}.hc b{display:block;margin-top:8px;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.hc small{display:block;margin-top:2px;color:var(--mut);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}</style>
+<div class="sec"><div><div class="eb">NOVA SELECTION</div><h2>Türkçe Trend</h2></div></div><div class="hrow" id="hTr"></div>
+<div class="sec"><div><div class="eb">SOUNDCLOUD</div><h2>SoundCloud Playlistleri</h2></div></div>
+<div class="hrow" id="hScPlaylists"><div class="empty">Playlistler yükleniyor…</div></div>
+<div class="sec"><div><div class="eb">NOVA MUSIC</div><h2>Son Eklenenler</h2></div></div><div class="hrow" id="hNew"></div>
+    <div class="sec"><div><div class="eb">KEŞFET</div><h2>Şarkı türleri</h2></div></div><div class="hrow" id="hGenres"></div>
+    <div id="genWrap" style="display:none"><div class="sec"><div><div class="eb">TÜR</div><h2 id="genTitle"></h2></div></div><div class="hrow" id="hGen"></div></div>
+    <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Listelerim</h2></div></div><div class="hrow" id="hLists"><div class="empty">Henüz listen yok.</div></div>
+    <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Favorilerin</h2></div></div>
+    <div id="fav" style="margin-top:14px"></div>
+    <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Eklediklerim</h2></div></div>
+    <div id="addHome" style="margin-top:14px"></div>
+  </section>
+  <section class="view" id="v-about">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:34px">
+    <div>
+      <div class="eb">NOVA MUSIC</div>
+      <h2 style="font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:6px">Hakkımda</h2>
+    </div>
+    <button id="openSettings" aria-label="Ayarlar" style="width:44px;height:44px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+  <div class="card" id="accountCard" style="margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <img id="profileAvatar" src="" alt="" style="width:68px;height:68px;border-radius:50%;object-fit:cover;background:var(--panel);display:none">
+      <div id="profileAvatarFallback" style="width:68px;height:68px;border-radius:50%;background:var(--panel);display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      </div>
+      <div style="min-width:0;flex:1">
+        <h3 id="profileName">Misafir kullanıcı</h3>
+        <p id="profileRole" style="color:var(--mut);margin-top:5px">Giriş yapılmadı</p>
+      </div>
+    </div>
+    <div id="profileDetails" style="margin-top:18px;display:none">
+      <div class="srow"><div><b>E-posta</b><small id="profileEmail">-</small></div></div>
+      <div class="srow"><div><b>Kayıt tarihi</b><small id="profileCreated">-</small></div></div>
+    </div>
+    <button class="btn" id="googleLogin" style="margin-top:16px">Google ile giriş yap</button>
+    <p id="accountStatus" style="color:var(--mut);margin-top:10px">Henüz giriş yapmadın.</p>
+    <button class="btn" id="switchGoogleAccount" style="display:none;margin-top:10px">Hesap değiştir</button>
+  </div>
+  <div class="card"><h3>NOVA Music</h3>Şarkı ara, trend listeyi dinle, favorilerini sakla.</div><div class="card" id="novaLists" style="margin-top:20px"></div><div class="card" id="novaFavs" style="margin-top:20px"></div>
+</section>
+<section class="view" id="v-profile-edit">
+  <div style="display:flex;align-items:center;gap:14px;margin-top:34px">
+    <button id="backProfile" aria-label="Geri" style="font-size:24px">‹</button>
+    <h2 style="font-size:30px;font-weight:700">Profili Düzenle</h2>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <img id="editAvatarPreview" alt="Profil fotoğrafı" style="width:76px;height:76px;border-radius:50%;object-fit:cover;display:none">
+      <div>
+        <b>Profil fotoğrafı</b>
+        <p style="color:var(--mut);margin-top:5px">Cihazından bir fotoğraf seç.</p>
+      </div>
+    </div>
+    <input id="avatarFile" type="file" accept="image/*" style="display:none">
+    <button class="btn" id="chooseAvatar" style="margin-top:14px">Galeriden fotoğraf seç</button>
+    <div class="srow col" style="margin-top:16px">
+      <b>Kullanıcı adı</b>
+      <input id="profileUsername" maxlength="30" placeholder="Kullanıcı adın" style="margin-top:8px">
+      <button class="btn" id="saveProfile" style="margin-top:10px">Değişiklikleri kaydet</button>
+      <small id="profileMessage"></small>
+    </div>
+  </div>
+</section>
+<section class="view" id="v-settings">
+  <div style="display:flex;align-items:center;gap:14px;margin-top:34px">
+    <button id="backAbout" aria-label="Geri" style="font-size:24px">‹</button>
+    <h2 style="font-size:30px;font-weight:700">Ayarlar</h2>
+  </div>
+  <div class="card" style="margin-top:20px"><button class="btn" id="openProfileEdit" style="display:none">Profili Düzenle</button></div>
+  
+  <div class="card" id="themeCard" style="margin-top:20px"><div class="srow col" style="padding:0;border:0"><div><b>Tema / Görünüm</b><small>Arka plan, renkler ve efektler</small></div></div><div class="tgrid" id="themeGrid" role="radiogroup" aria-label="Tema"></div><small class="thint">Tema seçiliyken vurgu rengini tema belirler. “Varsayılan” mevcut tasarımdır.</small></div>
+  <div class="card" style="margin-top:20px">
+    <div class="srow col"><div><b>Vurgu rengi</b><small>Uygulamanın ana rengi</small></div><div class="sw" id="sw" style="margin-top:12px"></div></div>
+    <div class="srow"><div><b>Karıştır</b><small>Sıradaki şarkı rastgele seçilir</small></div><button class="tg" id="tgShuf" aria-label="Karıştır"></button></div>
+    <div class="srow"><div><b>Tekrar</b><small>Şarkı bitince başa sarar</small></div><button class="tg" id="tgRep" aria-label="Tekrar"></button></div>
+    <div class="srow col"><div><b>Uyku zamanlayıcı</b><small id="slLeft">Kapalı</small></div><div class="chips" id="chSleep"></div></div>
+  </div>
+  <div class="card"><div class="srow col" style="padding:0;border:0"><div><b style="color:var(--tx);font-size:16px">Favoriler</b><small>Bu cihazdaki tüm favorileri siler</small></div></div><div style="margin-top:14px"><button class="danger" id="clrFav">Favorileri temizle</button></div></div>
+  <div class="card" id="adminCard" style="display:none"><b style="color:var(--tx);font-size:16px">Admin</b><small id="adminState" style="display:block;margin-top:4px"></small><input class="tin" id="adminIn" type="password" placeholder="Admin şifresi" autocomplete="off"><button class="btn" id="adminGo" style="margin-top:10px">Admin olarak giriş yap</button><button class="danger" id="adminOut" style="display:none;margin-top:10px">Adminlikten çık</button><div id="adminMsg" style="margin-top:10px;font-size:14px;min-height:18px"></div></div>
+  <div class="card"><button class="danger" id="googleLogout" style="display:none">Çıkış yap</button></div>
+</section>
+<section class="view" id="v-request">
+  <div class="eb" style="margin-top:34px">İSTEK</div>
+  <h2 style="font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:6px">İstekte bulun</h2>
+  <div class="card" style="margin-top:20px">
+    <b style="color:var(--tx);font-size:16px">Eklenmesini istediğin şarkı</b>
+    <small style="display:block;margin-top:6px;color:var(--mut)">Şarkı adını ya da bağlantısını yaz, yapay zekâ inceleyip uygun bulursa ekler.</small>
+    <textarea class="tin" id="reqText" rows="4" maxlength="300" placeholder="Şarkı adı, sanatçı ya da bağlantı…" style="margin-top:12px"></textarea>
+    <button class="btn" id="reqSend" style="margin-top:10px">İstek gönder</button>
+    <div id="reqMsg" style="margin-top:10px;font-size:14px;min-height:18px"></div>
+  </div>
+</section>
+<section class="view" id="v-add">
+    <div class="eb" style="margin-top:34px">KÜTÜPHANE</div>
+    <h2 style="font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:6px">Şarkı ekle</h2>
+    <div class="card" style="margin-top:20px">
+      <b style="color:var(--tx);font-size:16px">YouTube, SoundCloud şarkı / playlist veya MP3 bağlantısı</b>
+      <input class="tin" id="ytIn" type="url" inputmode="url" placeholder="Şarkı bağlantısını yapıştır..." autocomplete="off">
+      <button class="btn" id="ytAdd">Ekle</button>
+      <div id="ytMsg" style="margin-top:12px;font-size:14px;min-height:18px"></div>
+      <small style="display:block;margin-top:10px;color:var(--mut)">YouTube • SoundCloud • MP3</small>
+    </div>
+    <button id="toggleAddList" class="sec" style="width:100%;text-align:left;background:none;border:0;color:var(--tx);cursor:pointer"><div><div class="eb">İSTEĞE BAĞLI</div><h2>Eklediklerim <span id="addListArrow">⌄</span></h2></div></button>
+    <div id="addList" style="display:none;margin-top:14px"></div>
+    <script>try{localStorage.removeItem("nova_tema")}catch(e){}
+    (function(){
+      var b=document.getElementById('toggleAddList');
+      var list=document.getElementById('addList');
+      var arrow=document.getElementById('addListArrow');
+      if(!b||!list||!arrow)return;
+      b.addEventListener('click',function(){
+        var open=list.style.display==='none';
+        list.style.display=open?'':'none';
+        arrow.textContent=open?'⌃':'⌄';
+      });
+    })();
+    </script>
+    <div id="sharedManage" style="display:none;margin-top:28px">
+      <div class="sec"><div><div class="eb">YÖNETİM</div><h2>Ortak Şarkıları Yönet</h2></div></div>
+      <div id="sharedList" style="margin-top:14px"></div>
+    </div>
+  </section>
+</main>
+
+<div id="avatarViewer" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9999;align-items:center;justify-content:center"><img id="avatarViewerImg" alt="" style="max-width:100%;max-height:100%;object-fit:contain"></div>
+<div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:9998;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px">
+<b style="font-size:18px">Fotoğrafı ayarla</b>
+<div id="cropBox" style="width:280px;height:280px;border-radius:50%;overflow:hidden;position:relative;touch-action:none;background:#000;border:2px solid var(--line)"><img id="cropImg" alt="" draggable="false" style="position:absolute;left:50%;top:50%;max-width:none;max-height:none;transform-origin:center;pointer-events:none;user-select:none"></div>
+<input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" style="display:none"><div id="zoomTrack" style="position:relative;width:280px;height:34px;touch-action:none"><div style="position:absolute;left:0;right:0;top:15px;height:4px;border-radius:2px;background:#555"></div><div id="zoomKnob" style="position:absolute;top:4px;left:0;width:26px;height:26px;border-radius:50%;background:#1ed760"></div></div>
+<div style="display:flex;gap:12px;width:280px"><button class="danger" id="cropNo" style="flex:1">Vazgeç</button><button class="btn" id="cropOk" style="flex:1">Uygula</button></div>
+</div>
+<div id="notifPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:9997;overflow-y:auto;padding:20px">
+<div style="display:flex;align-items:center;gap:14px;margin-top:34px"><button id="notifBack" aria-label="Geri" style="font-size:24px">‹</button><h2 style="font-size:30px;font-weight:700">Bildirimler</h2></div>
+<div id="notifList" style="margin-top:20px"></div>
+</div>
+<div id="ytWrap" style="position:fixed;right:0;bottom:0;width:2px;height:2px;opacity:.01;overflow:hidden;pointer-events:none;z-index:-1"><div id="ytBox"></div></div>
+<div id="scWrap" style="position:fixed;right:0;bottom:0;width:2px;height:2px;opacity:.01;overflow:hidden;pointer-events:none;z-index:-1"><iframe id="scFrame" allow="autoplay" width="2" height="2"></iframe></div>
+<div id="player">
+  <div class="pr">
+    <img id="pArt" alt="">
+    <div class="pt"><div class="mq" id="mq"><span id="pTitle"></span></div><div id="pArtist"></div></div>
+    <button class="hb" id="pHeart" aria-label="Favori"></button><button class="hb" id="pAdd" aria-label="Listeye ekle"></button>
+  </div>
+  <div class="ctl">
+    <button id="pPrev" aria-label="Önceki"><svg class="f" viewBox="0 0 24 24"><path d="M6 5h2.500v14H6zM20 5v14L9 12z"/></svg></button>
+    <button id="pPlay" aria-label="Çal / duraklat"></button>
+    <button id="pNext" aria-label="Sonraki"><svg class="f" viewBox="0 0 24 24"><path d="M15.500 5H18v14h-2.500zM4 5l11 7-11 7z"/></svg></button>
+  </div>
+  <div class="pg"><span id="tC">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="tD">0:00</span></div>
+</div>
+
+<nav>
+  <button class="on" data-v="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>Ana Sayfa</button>
+  <button data-v="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Ara</button>
+  <button data-v="add" id="navAdd" style="display:none"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ekle</button>
+  <button data-v="request"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>İstekte bulun</button>
+  <button data-v="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Hakkımda</button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const HEART='<svg viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.800-8 11-8 11z"/></svg>';
+const PLAY='<svg class="f" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>';
+const PAUSE='<svg class="f" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+const API='https://api.audius.co/v1';
+const audio=new Audio();
+const L={trend:[],res:[],fav:[],add:[],new:[]};
+let queue=[],idx=-1;
+
+function loadFavs(){try{return JSON.parse(localStorage.getItem('nova_favs'))||[]}catch(e){return[]}}
+function saveFavs(){try{localStorage.setItem('nova_favs',JSON.stringify(L.fav))}catch(e){}}
+const isFav=id=>L.fav.some(t=>t.id===id);
+
+const norm=r=>({id:r.id,name:r.title,artist:r.user&&r.user.name||'',art:r.artwork&&(r.artwork['480x480']||r.artwork['150x150'])||'',url:API+'/tracks/'+r.id+'/stream?app_name=NOVA'});
+const clean=a=>(a||[]).filter(r=>r&&r.id&&r.is_streamable!==false).map(norm);
+async function getJSON(u){const r=await fetch(u);if(!r.ok)throw 0;return r.json()}
+const trending=async()=>clean((await getJSON(API+'/tracks/trending?time=week&limit=25&app_name=NOVA')).data).filter(t=>!t.name.toLowerCase().includes('140 mix'));
+const search=async q=>clean((await getJSON(API+'/tracks/search?limit=25&app_name=NOVA&query='+encodeURIComponent(q))).data);
+
+const cur=()=>queue[idx];
+function rows(name){
+  return L[name].map((t,i)=>{
+    const on=cur()&&cur().id===t.id,pl=on&&isPl();
+    return `<div class="row${on?' on':''}" data-l="${name}" data-i="${i}">
+      <img src="${esc(t.art)}" alt="" loading="lazy"><div class="t"><b>${esc(t.name)}</b><small>${on&&pl?'Şu anda çalıyor…':esc(t.artist)}</small></div>
+      <button class="hb${isFav(t.id)?' on':''}" data-h="${t.id}" aria-label="Favori">${HEART}</button>
+      <button class="pl" aria-label="Çal">${pl?PAUSE:PLAY}</button></div>`}).join('');
+}
+function render(){
+  $('#trend').innerHTML=L.trend.length?rows('trend'):'<div class="empty">Trend liste yüklenemedi. İnterneti kontrol et.</div>';
+  $('#cnt').textContent=L.trend.length?L.trend.length+' şarkı bulundu':'';
+  $('#res').innerHTML=rows('res');
+  $('#fav').innerHTML=L.fav.length?rows('fav'):'<div class="empty">Henüz favori yok. Bir şarkıdaki kalbe dokun.</div>';
+  const c=cur();$('#pHeart').innerHTML=HEART;$('#pHeart').classList.toggle('on',!!c&&isFav(c.id));
+}
+function toggleFav(id){
+  const t=[...L.trend,...L.res,...L.fav,...queue].find(x=>x.id===id);if(!t)return;
+  L.fav=isFav(id)?L.fav.filter(x=>x.id!==id):[t,...L.fav];saveFavs();render();
+}
+
+function play(list,i){
+  queue=list.slice();idx=i;const t=queue[i];
+  audio.src=t.url;audio.play().catch(()=>{});if(t.url.indexOf('/api/yt')===0){/*nova-bekle*/var g=document.getElementById('novaToast');if(!g){g=document.createElement('div');g.id='novaToast';g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:99999;opacity:0;transition:opacity 1s ease;pointer-events:none';document.body.appendChild(g)}g.textContent='⏳ Geç açılabilir, bekle…';g.style.display='block';clearTimeout(window.__toastT);g.style.opacity='0';void g.offsetWidth;g.style.opacity='1';window.__toastT=setTimeout(function(){g.style.opacity='0'},2000)}
+  $('#pArt').src=t.art;$('#pTitle').textContent=t.name;$('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
+  $('#player').classList.add('show');requestAnimationFrame(marquee);render();
+}
+function step(d){if(queue.length)play(queue,(idx+d+queue.length)%queue.length)}
+function marquee(){
+  const m=$('#mq'),s=$('#pTitle');m.classList.remove('go');
+  const over=s.scrollWidth-m.clientWidth;
+  if(over>2){m.style.setProperty('--s',-(over+8)+'px');m.style.setProperty('--d',Math.max(4,over/25)+'s');m.classList.add('go')}
+}
+const fmt=s=>isFinite(s)&&s>0?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
+audio.addEventListener('timeupdate',()=>{
+  const p=audio.duration?audio.currentTime/audio.duration*1000:0;
+  $('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');$('#tC').textContent=fmt(audio.currentTime);
+});
+audio.addEventListener('loadedmetadata',()=>$('#tD').textContent=fmt(audio.duration));
+audio.addEventListener('play',()=>{$('#pPlay').innerHTML=PAUSE;render()});
+audio.addEventListener('pause',()=>{$('#pPlay').innerHTML=PLAY;render()});
+audio.addEventListener('ended',()=>step(1));
+audio.addEventListener('error',()=>{alert('Bu link çalınamıyor. Doğrudan ses linki (.mp3, .m4a) gerekli, SoundCloud sayfa linkleri çalmaz.');if(queue.length>1)setTimeout(()=>step(1),800)});
+$('#pPlay').innerHTML=PLAY;
+$('#pPlay').onclick=()=>audio.paused?audio.play():audio.pause();
+$('#pPrev').onclick=()=>step(-1);$('#pNext').onclick=()=>step(1);
+$('#pHeart').onclick=()=>cur()&&toggleFav(cur().id);
+/*nova-pl*/
+(function(){
+var K='nova_playlists';
+function load(){try{return JSON.parse(localStorage.getItem(K))||[]}catch(e){return[]}}
+function save(a){try{localStorage.setItem(K,JSON.stringify(a))}catch(e){}}
+var b=$('#pAdd');
+b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12M4 11h12M4 16h7M18 13v6M15 16h6"/></svg>';
+function msg(t){var g=document.createElement('div');g.textContent=t;g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:100001;opacity:0;transition:opacity .5s';document.body.appendChild(g);void g.offsetWidth;g.style.opacity='1';setTimeout(function(){g.style.opacity='0';setTimeout(function(){g.remove()},500)},2000)}
+function addTo(i,t){var a=load();if(a[i].tracks.some(function(x){return x.id===t.id})){msg('Zaten bu listede')}else{a[i].tracks.push({id:t.id,name:t.name,artist:t.artist,art:t.art,url:t.url});save(a);msg('"'+a[i].name+'" listesine eklendi')}}
+function close(){var o=document.getElementById('novaPL');if(o)o.remove()}
+function open(){
+var t=cur();if(!t)return;close();
+var o=document.createElement('div');o.id='novaPL';
+o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100000;display:flex;align-items:flex-end';
+o.onclick=function(e){if(e.target===o)close()};
+var s=document.createElement('div');
+s.style.cssText='width:100%;max-height:70%;overflow:auto;background:var(--sheet,#1a1a1f);color:#fff;border-radius:20px 20px 0 0;padding:16px';
+var ttl=document.createElement('div');ttl.textContent='Listeye ekle';ttl.style.cssText='font-weight:700;font-size:17px;margin-bottom:12px';s.appendChild(ttl);
+function row(txt,fn,accent){var r=document.createElement('button');r.textContent=txt;r.style.cssText='display:block;width:100%;text-align:left;padding:14px;margin-bottom:8px;border:0;border-radius:12px;font-size:15px;color:#fff;background:'+(accent?'var(--ac,#6c5ce7)':'rgba(255,255,255,.08)');r.onclick=fn;s.appendChild(r)}
+row('+ Yeni liste oluştur',function(){window.novaAsk('Yeni liste','',function(n){var a=load();a.push({name:n,tracks:[]});save(a);addTo(a.length-1,t);close();if(window.novaRenderAbout)window.novaRenderAbout()})},true);
+load().forEach(function(p,i){row(p.name+' ('+p.tracks.length+' şarkı)',function(){addTo(i,t);close()})});
+o.appendChild(s);document.body.appendChild(o);
+}
+b.onclick=open;
+})();
+/*nova-about*/
+(function(){
+var K='nova_playlists',openI=-1;
+function load(){try{return JSON.parse(localStorage.getItem(K))||[]}catch(e){return[]}}
+function save(a){try{localStorage.setItem(K,JSON.stringify(a))}catch(e){}}
+function el(tag,css,txt){var e=document.createElement(tag);if(css)e.style.cssText=css;if(txt!==undefined)e.textContent=txt;return e}
+window.novaAsk=function(title,def,cb){
+  var o=el('div','position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100002;display:flex;align-items:center;justify-content:center;padding:20px');
+  var bx=el('div','width:100%;max-width:340px;background:var(--sheet,#1a1a1f);color:#fff;border-radius:18px;padding:18px');
+  bx.appendChild(el('div','font-weight:700;font-size:17px;margin-bottom:12px',title));
+  var inp=el('input','width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:16px');
+  inp.value=def||'';inp.placeholder='Liste adı';inp.maxLength=40;
+  var row=el('div','display:flex;gap:8px;margin-top:12px');
+  var no=el('button','flex:1;padding:12px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font-size:15px','İptal');
+  var ok=el('button','flex:1;padding:12px;border:0;border-radius:10px;background:var(--ac,#6c5ce7);color:#fff;font-size:15px;font-weight:600','Kaydet');
+  no.onclick=function(){o.remove()};
+  function go(){var n=inp.value.trim();if(!n)return;o.remove();cb(n.slice(0,40))}
+  ok.onclick=go;inp.onkeydown=function(ev){if(ev.key==='Enter')go()};
+  row.appendChild(no);row.appendChild(ok);bx.appendChild(inp);bx.appendChild(row);o.appendChild(bx);document.body.appendChild(o);
+  setTimeout(function(){inp.focus();inp.select()},50);
+};
+function trackRow(list,i){
+  var t=list[i];
+  var r=el('button','display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px;margin-bottom:6px;border:0;border-radius:10px;background:rgba(255,255,255,.06);color:inherit;font-size:14px');
+  var im=el('img','width:40px;height:40px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.1)');
+  if(t.art)im.src=t.art;
+  var w=el('div','min-width:0;flex:1');
+  w.appendChild(el('div','white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600',t.name||''));
+  w.appendChild(el('div','white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.6;font-size:12px',t.artist||''));
+  r.appendChild(im);r.appendChild(w);
+  r.onclick=function(){play(list,i)};
+  return r;
+}
+function renderAbout(){
+  var lb=document.getElementById('novaLists'),fb=document.getElementById('novaFavs');
+  if(!lb||!fb)return;
+  lb.innerHTML='';fb.innerHTML='';
+  var pl=load();
+  lb.appendChild(el('div','font-weight:700;font-size:16px;margin-bottom:10px','Listelerim ('+pl.length+')'));
+  if(!pl.length)lb.appendChild(el('div','opacity:.6;font-size:13px','Henüz liste yok. Çalardaki liste düğmesiyle oluştur.'));
+  pl.forEach(function(p,i){
+    var head=el('div','display:flex;gap:6px;margin-bottom:6px');
+    var b=el('button','flex:1;min-width:0;text-align:left;padding:12px;border:0;border-radius:10px;background:rgba(108,92,231,.25);color:inherit;font-size:15px;font-weight:600',(openI===i?'▾ ':'▸ ')+p.name+' ('+p.tracks.length+')');
+    b.onclick=function(){openI=(openI===i?-1:i);renderAbout()};
+    var rn=el('button','padding:12px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:inherit;font-size:13px','Ad');
+    rn.onclick=function(){window.novaAsk('Liste adı',p.name,function(n){var a=load();a[i].name=n;save(a);renderAbout()})};
+    var d=el('button','padding:12px;border:0;border-radius:10px;background:rgba(255,80,80,.2);color:inherit;font-size:13px','Sil');
+    d.onclick=function(){if(confirm('"'+p.name+'" listesi silinsin mi?')){var a=load();a.splice(i,1);save(a);openI=-1;renderAbout()}};
+    head.appendChild(b);head.appendChild(rn);head.appendChild(d);lb.appendChild(head);
+    if(openI===i){
+      if(!p.tracks.length)lb.appendChild(el('div','opacity:.6;font-size:13px;margin:0 0 8px 6px','Liste boş.'));
+      p.tracks.forEach(function(t,j){lb.appendChild(trackRow(p.tracks,j))});
+    }
+  });
+  var fav=L.fav||[];
+  fb.appendChild(el('div','font-weight:700;font-size:16px;margin-bottom:10px','Favoriler ('+fav.length+')'));
+  if(!fav.length)fb.appendChild(el('div','opacity:.6;font-size:13px','Henüz favori yok.'));
+  fav.forEach(function(t,i){fb.appendChild(trackRow(fav,i))});
+}
+window.novaRenderAbout=renderAbout;
+var nb=document.querySelector('button[data-v="about"]');
+if(nb)nb.addEventListener('click',function(){setTimeout(renderAbout,0)});
+renderAbout();
+})();
+$('#seek').oninput=e=>{if(audio.duration)audio.currentTime=e.target.value/1000*audio.duration};
+
+document.addEventListener('click',e=>{
+  const h=e.target.closest('[data-h]');
+  if(h){e.stopPropagation();toggleFav(h.dataset.h);return}
+  const r=e.target.closest('.row');if(!r)return;
+  const list=L[r.dataset.l],i=+r.dataset.i;
+  if(cur()&&cur().id===list[i].id){togglePlay();$('#player').classList.add('show')}
+  else play(list,i);
+});
+
+let y0=null;const P=$('#player');
+P.addEventListener('touchstart',e=>y0=e.touches[0].clientY,{passive:true});
+P.addEventListener('touchend',e=>{if(y0!==null&&e.changedTouches[0].clientY-y0>45)P.classList.remove('show');y0=null});
+
+let tm;
+function openSearch(on){
+  $('#sBox').classList.toggle('open',on);
+  if(on)setTimeout(()=>$('#q').focus(),250);else{$('#q').value='';$('#resWrap').hidden=true;L.res=[]}
+}
+$('#q').addEventListener('input',e=>{
+  clearTimeout(tm);const q=e.target.value.trim();
+  if(!q){$('#resWrap').hidden=true;return}
+  tm=setTimeout(async()=>{
+    $('#resWrap').hidden=false;$('#res').innerHTML='<div class="empty">Aranıyor…</div>';
+    try{L.res=await search(q);if(L.res.length)render();else $('#res').innerHTML='<div class="empty">Sonuç bulunamadı.</div>'}
+    catch(err){$('#res').innerHTML='<div class="empty">Arama başarısız. İnterneti kontrol et.</div>'}
+  },400);
+});
+
+async function loadTrend(){
+  $('#trend').innerHTML='<div class="empty">Yükleniyor…</div>';
+  try{L.trend=await trending()}catch(e){L.trend=[]}
+  render();
+}
+document.getElementById('appRefresh').onclick=function(){window.location.reload();};
+
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.v;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  $('#v-settings').classList.remove('on');$('#v-profile-edit').classList.remove('on');$('#v-home').classList.toggle('on',v!=='about'&&v!=='add'&&v!=='request');$('#v-request').classList.toggle('on',v==='request');$('#v-add').classList.toggle('on',v==='add');$('#v-about').classList.toggle('on',v==='about');
+  scrollTo({top:0,behavior:'smooth'});
+  if(v==='search')openSearch(true);else openSearch(false);
+});
+
+$('#openSettings').onclick=()=>{$('#v-about').classList.remove('on');$('#v-settings').classList.add('on');scrollTo(0,0)};
+$('#openProfileEdit').onclick=()=>{$('#v-settings').classList.remove('on');$('#v-profile-edit').classList.add('on');scrollTo(0,0)};
+$('#backProfile').onclick=()=>{$('#v-profile-edit').classList.remove('on');$('#v-settings').classList.add('on');scrollTo(0,0)};
+window.pendingAvatar=null;
+$('#chooseAvatar').onclick=()=>$('#avatarFile').click();
+$('#avatarFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f);const img=new Image();img.onload=()=>{const S=256,c=document.createElement('canvas');c.width=c.height=S;const r=Math.max(S/img.width,S/img.height),w=img.width*r,h=img.height*r;c.getContext('2d').drawImage(img,(S-w)/2,(S-h)/2,w,h);window.pendingAvatar=c.toDataURL('image/jpeg',.8);const pv=$('#editAvatarPreview');pv.src=window.pendingAvatar;pv.style.display='block';URL.revokeObjectURL(u)};img.src=u};
+$('#profileAvatar').style.cursor='pointer';
+$('#profileAvatar').onclick=()=>{const v=$('#avatarViewer');$('#avatarViewerImg').src=$('#profileAvatar').src;v.style.display='flex'};
+$('#avatarViewer').onclick=()=>{$('#avatarViewer').style.display='none'};
+(function(){
+const V=280;let im,mn=1,z=1,x=0,y=0,pd=0;const P=new Map();
+const m=$('#cropModal'),box=$('#cropBox'),ci=$('#cropImg'),zr=$('#cropZoom');
+function draw(){const w=im.width*mn*z/2-V/2,h=im.height*mn*z/2-V/2;x=Math.max(-w,Math.min(w,x));y=Math.max(-h,Math.min(h,y));ci.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px) scale('+(mn*z)+')'}
+$('#avatarFile').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const u=URL.createObjectURL(f);const i=new Image();i.onload=()=>{im=i;mn=Math.max(V/i.width,V/i.height);z=1;x=y=0;zr.value=1;ci.src=u;ci.style.width=i.width+'px';ci.style.height=i.height+'px';m.style.display='flex';draw()};i.src=u};
+box.onpointerdown=e=>{box.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size==2){const a=[...P.values()];pd=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])}};
+box.onpointermove=e=>{if(!P.has(e.pointerId))return;const o=P.get(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size==1){x+=e.clientX-o[0];y+=e.clientY-o[1]}else if(P.size==2){const a=[...P.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(pd)z=Math.max(1,Math.min(4,z*d/pd));pd=d;zr.value=z}draw()};
+box.onpointerup=box.onpointercancel=e=>{P.delete(e.pointerId);pd=0};
+zr.oninput=()=>{z=+zr.value;draw()};
+$('#cropNo').onclick=()=>{m.style.display='none'};
+$('#cropOk').onclick=()=>{const S=256,k=S/V,sc=mn*z,c=document.createElement('canvas');c.width=c.height=S;c.getContext('2d').drawImage(im,(V/2+x-im.width*sc/2)*k,(V/2+y-im.height*sc/2)*k,im.width*sc*k,im.height*sc*k);window.pendingAvatar=c.toDataURL('image/jpeg',.85);const pv=$('#editAvatarPreview');pv.src=window.pendingAvatar;pv.style.display='block';m.style.display='none'};
+})();
+(function(){const zr=$('#cropZoom'),t=$('#zoomTrack'),kn=$('#zoomKnob');let drag=false;
+function sync(){kn.style.left=((+zr.value-1)/3*(t.clientWidth-26))+'px'}
+function set(cx){const r=t.getBoundingClientRect();let f=(cx-r.left-13)/(r.width-26);f=Math.max(0,Math.min(1,f));zr.value=1+f*3;zr.oninput();sync()}
+t.onpointerdown=e=>{drag=true;t.setPointerCapture(e.pointerId);set(e.clientX)};
+t.onpointermove=e=>{if(drag)set(e.clientX)};
+t.onpointerup=t.onpointercancel=()=>{drag=false};
+setInterval(()=>{if(!drag&&$('#cropModal').style.display=='flex')sync()},60);
+})();
+(function(){
+function hrow(sel,name,emptyMsg){
+  var a=(L[name]||[]).slice(0,10),el=$(sel);if(!el)return;
+  el.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="'+name+'" data-hi="'+i+'"><img src="'+esc(t.art)+'" alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">'+emptyMsg+'</div>';
+}
+function homeRows(){L.recentAdd=(L.new||[]).filter(function(t){return t.createdAt&&Date.now()-t.createdAt<=5*24*60*60*1000});hrow('#hTrend','trend','Yükleniyor…');hrow('#hTr','tr','Yükleniyor…');hrow('#hNew','recentAdd','Son 5 günde eklediğin şarkı yok.')}
+    window.refreshHomeRows=homeRows;
+var _r=render;render=function(){_r();homeRows()};
+document.addEventListener('click',function(e){
+  var c=e.target.closest&&e.target.closest('.hc');if(!c)return;
+  var n=c.dataset.hl,i=+c.dataset.hi;
+  if(L[n]&&L[n][i])play(L[n].slice(0,10),i);
+});
+L.tr=[];
+fetch('/api/tr-list').then(function(r){return r.json()}).then(function(list){L.tr=list.map(function(x){return{id:x.id,name:x.name,artist:x.artist,art:x.art,url:'/api/yt?q='+encodeURIComponent(x.yt)}});homeRows()}).catch(function(){L.tr=[];homeRows()});
+homeRows();
+})();
+(function(){
+var G=[['Pop','Pop'],['Rap','Hip-Hop/Rap'],['Rock','Rock'],['Elektronik','Electronic'],['Klasik','Classical'],['Jazz','Jazz'],['R&B','R&B/Soul'],['Metal','Metal'],['Latin','Latin'],['Ambient','Ambient']];
+L.gen=[];
+var bar=document.getElementById('hGenres'),wrap=document.getElementById('genWrap'),row=document.getElementById('hGen'),ttl=document.getElementById('genTitle');
+var GCOL=[['#ff5fa2','#7b2ff7'],['#f7971e','#ff3b30'],['#cb2d3e','#1c1c1c'],['#00c6ff','#0072ff'],['#c9a66b','#4b3621'],['#2c3e8f','#0f1a40'],['#a044ff','#6a3093'],['#434343','#000000'],['#ff9966','#ff5e62'],['#43cea2','#185a9d']];
+var GS=['pop','rap','rock','elektronik','klasik','jazz','rnb','metal','latin','ambient'];
+bar.innerHTML=G.map(function(g,i){return '<button class="gchip" data-g="'+i+'" style="flex:0 0 150px;height:92px;border-radius:16px;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:flex-start;padding:12px;text-align:left;font-size:20px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6);border:0;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.5)),url(genres/'+GS[i]+'.jpg) center/cover no-repeat,linear-gradient(135deg,'+GCOL[i][0]+','+GCOL[i][1]+')">'+g[0]+'</button>'}).join('');
+bar.onclick=async function(e){
+  var b=e.target.closest('.gchip');if(!b)return;
+  var g=G[+b.dataset.g];
+  bar.querySelectorAll('.gchip').forEach(function(x){x.style.outline=x===b?'3px solid var(--g)':'none';x.style.outlineOffset='-3px'});
+  wrap.style.display='block';ttl.textContent=g[0];row.innerHTML='<div class="empty">Yükleniyor…</div>';
+  try{
+    var r=await getJSON(API+'/tracks/trending?genre='+encodeURIComponent(g[1])+'&time=week&limit=20&app_name=NOVA');
+    L.gen=clean(r.data);
+  }catch(err){L.gen=[]}
+  var a=L.gen.slice(0,15);
+  row.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="gen" data-hi="'+i+'"><img src="'+esc(t.art)+'" alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">Bu türde şarkı bulunamadı.</div>';
+};
+})();
+$('#backAbout').onclick=()=>{$('#v-settings').classList.remove('on');$('#v-about').classList.add('on');scrollTo(0,0)};
+addEventListener('scroll',()=>{const o=Math.max(0,1-scrollY/160);$('#hero').style.opacity=o;$('#hero').style.pointerEvents=o?'':'none'},{passive:true});
+
+function net(){const s=$('#st');const on=navigator.onLine;s.classList.toggle('off',!on);s.innerHTML='<i></i>'+(on?'ONLINE':'OFFLINE')}
+addEventListener('online',net);addEventListener('offline',net);net();
+
+(()=>{const n=$('#notes'),c=['♪','♫','♩','♬'];
+  for(let i=0;i<16;i++){const s=document.createElement('span');
+    s.textContent=c[i%4];s.style.left=Math.random()*95+'%';s.style.fontSize=(18+Math.random()*24)+'px';
+    s.style.animationDuration=(14+Math.random()*14)+'s';s.style.animationDelay=(-Math.random()*22)+'s';n.appendChild(s)}})();
+
+(function(){
+  var K='nova_set',D={c:'#1ed760',shuf:false,rep:false},S;
+  try{S=Object.assign({},D,JSON.parse(localStorage.getItem(K)))}catch(e){S=Object.assign({},D)}
+  function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+  var COLORS=['#1ed760','#a855f7','#3b82f6','#f97316','#ec4899'];
+  function dark(h){var n=parseInt(h.slice(1),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+    return 'rgb('+Math.round(r*.16+10)+','+Math.round(g*.16+10)+','+Math.round(b*.16+10)+')'}
+  function applyColor(){var s=document.documentElement.style;s.setProperty('--g',S.c);s.setProperty('--gd',dark(S.c))}
+  function sw(){var b=$('#sw');b.innerHTML='';COLORS.forEach(function(c){
+    var x=document.createElement('button');x.style.background=c;x.setAttribute('aria-label',c);
+    if(c===S.c)x.className='on';x.onclick=function(){S.c=c;save();applyColor();sw()};b.appendChild(x)})}
+  function tg(){$('#tgShuf').classList.toggle('on',S.shuf);$('#tgRep').classList.toggle('on',S.rep);audio.loop=S.rep}
+  $('#tgShuf').onclick=function(){S.shuf=!S.shuf;save();tg()};
+  $('#tgRep').onclick=function(){S.rep=!S.rep;save();tg()};
+
+  var _step=step;
+  step=function(d){
+    if(S.shuf&&d>0&&queue.length>1){var n;do{n=Math.floor(Math.random()*queue.length)}while(n===idx);play(queue,n)}
+    else _step(d)
+  };
+
+  var sm=0,sT=null,sI=null,sEnd=0;
+  function left(){var el=$('#slLeft');if(!sEnd){el.textContent='Kapalı';return}
+    var s=Math.max(0,Math.round((sEnd-Date.now())/1000));
+    el.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' sonra duracak'}
+  function chips(){var b=$('#chSleep');b.innerHTML='';
+    [[0,'Kapalı'],[15,'15 dk'],[30,'30 dk'],[60,'60 dk']].forEach(function(o){
+      var x=document.createElement('button');x.textContent=o[1];if(o[0]===sm)x.className='on';
+      x.onclick=function(){setSleep(o[0])};b.appendChild(x)})}
+  function setSleep(m){
+    clearTimeout(sT);clearInterval(sI);sEnd=0;sm=m;
+    if(m){sEnd=Date.now()+m*60000;
+      sT=setTimeout(function(){audio.pause();if(window.ytPause)ytPause();sEnd=0;sm=0;clearInterval(sI);left();chips()},m*60000);
+      sI=setInterval(left,1000)}
+    chips();left()}
+
+  $('#clrFav').onclick=function(){
+    if(!L.fav.length)return;
+    if(confirm('Tüm favoriler silinsin mi?')){L.fav=[];saveFavs();render()}};
+
+  applyColor();sw();tg();chips();left();
+})();
+(function(){
+  var AK='nova_added';
+  try{L.add=JSON.parse(localStorage.getItem(AK))||[]}catch(e){L.add=[]}
+  function saveAdd(){try{localStorage.setItem(AK,JSON.stringify(L.add))}catch(e){}}
+  var X='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var ytp=null,ytReady=false,ytWant=null,ytPlaying=false,ytTimer=null,ytPend=null;
+  var scw=null,scReady=false,scPlaying=false,scWant=null,scPend=null,scWantPlay=false,scLoadedSeq=0;
+  var playSeq=0,ytActiveSeq=0,scActiveSeq=0;
+
+  window.isPl=function(){
+    var c=cur();
+    if(c&&c.yt)return ytPlaying;
+    if(c&&c.sc)return scPlaying;
+    return !audio.paused;
+  };
+  window.togglePlay=function(){
+    var c=cur();
+    if(c&&c.yt){if(ytp&&ytReady){ytPlaying?ytp.pauseVideo():ytp.playVideo()}return}
+    if(c&&c.sc){if(scw&&scReady){if(scPlaying){scWantPlay=false;scw.pause()}else{scWantPlay=true;scw.play()}}else{scWantPlay=true}return}
+    audio.paused?audio.play():audio.pause();
+  };
+  window.ytPause=function(){if(ytp&&ytReady&&ytPlaying)ytp.pauseVideo()};
+
+  function stopT(){clearInterval(ytTimer);ytTimer=null}
+  function tick(){
+    if(!ytp||!ytReady)return;
+    var d=ytp.getDuration()||0,c=ytp.getCurrentTime()||0,p=d?c/d*1000:0;
+    $('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');
+    $('#tC').textContent=fmt(c);$('#tD').textContent=fmt(d);
+  }
+  function startT(){stopT();ytTimer=setInterval(tick,500)}
+  function repOn(){try{return !!JSON.parse(localStorage.getItem('nova_set')).rep}catch(e){return false}}
+
+  function onSt(e){
+    var c=cur();if(ytActiveSeq!==playSeq||!c||!c.yt)return;
+    var vid=e.target&&e.target.getVideoData?e.target.getVideoData().video_id:'';
+    if(vid&&vid!==c.yt)return;
+    var s=e.data;
+    if(s===1){ytPlaying=true;$('#pPlay').innerHTML=PAUSE;startT();render()}
+    else if(s===2){ytPlaying=false;$('#pPlay').innerHTML=PLAY;stopT();render()}
+    else if(s===0){
+      ytPlaying=false;$('#pPlay').innerHTML=PLAY;stopT();
+      if(repOn()){ytp.seekTo(0,true);ytp.playVideo()}else{render();step(1)}
+    }
+  }
+  function onErr(e){
+    var c=cur();if(ytActiveSeq!==playSeq||!c||!c.yt)return;
+    var vid=e&&e.target&&e.target.getVideoData?e.target.getVideoData().video_id:'';
+    if(vid&&vid!==c.yt)return;
+    ytPlaying=false;$('#pPlay').innerHTML=PLAY;
+    $('#pArtist').textContent='Bu video gömülü oynatmaya izin vermiyor';render();
+    if(queue.length>1)setTimeout(function(){step(1)},1500);
+  }
+  function ytInit(cb){
+    if(window.YT&&YT.Player){cb();return}
+    ytPend=cb;
+    window.onYouTubeIframeAPIReady=function(){if(ytPend){var f=ytPend;ytPend=null;f()}};
+    if(!document.getElementById('ytapi')){
+      var s=document.createElement('script');s.id='ytapi';s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);
+    }
+  }
+  function ytLoad(id,seq){
+    ytWant=id;ytActiveSeq=seq;
+    if(ytp&&ytReady){if(seq===playSeq)ytp.loadVideoById(id);return}
+    if(ytp)return;
+    ytInit(function(){
+      if(seq!==playSeq||!cur()||!cur().yt)return;
+      if(ytp)return;
+      ytp=new YT.Player('ytBox',{width:200,height:200,videoId:ytWant,
+        playerVars:{autoplay:1,playsinline:1,controls:0,rel:0},
+        events:{onReady:function(e){ytReady=true;var c=cur();if(ytActiveSeq===playSeq&&c&&c.yt)e.target.loadVideoById(c.yt)},onStateChange:onSt,onError:onErr}});
+    });
+  }
+  function ytStop(){ytPlaying=false;stopT();if(ytp&&ytReady)ytp.stopVideo()}
+
+  function scInit(cb){
+    if(window.SC&&SC.Widget){cb();return}
+    scPend=cb;
+    var script=document.getElementById('scapi');
+    if(!script){
+      script=document.createElement('script');
+      script.id='scapi';
+      script.src='https://w.soundcloud.com/player/api.js';
+      script.onload=function(){if(scPend){var f=scPend;scPend=null;f()}};
+      document.head.appendChild(script);
+    }else{
+      script.addEventListener('load',function(){
+        if(scPend){var f=scPend;scPend=null;f()}
+      },{once:true});
+    }
+  }
+  function scLoad(url,seq){
+    scWant=url;
+    scWantPlay=true;
+    scActiveSeq=seq;
+    scLoadedSeq=0;
+    scReady=false;
+    scPlaying=false;
+
+    scInit(function(){
+      if(seq!==playSeq||!cur()||!cur().sc)return;
+
+      var opts={
+        auto_play:false,
+        hide_related:true,
+        show_comments:false,
+        show_user:false,
+        visual:false
+      };
+
+      if(scw){
+        opts.callback=function(){
+          if(seq!==playSeq||scActiveSeq!==seq||!cur()||!cur().sc)return;
+          scLoadedSeq=seq;
+          scReady=true;
+          scWantPlay=true;
+          scw.play();
+        };
+        scw.load(url,opts);
+        return;
+      }
+
+      var frame=document.getElementById('scFrame');
+      frame.src='https://w.soundcloud.com/player/?url='+encodeURIComponent(url)+'&auto_play=false&hide_related=true&show_comments=false&show_user=false&visual=false';
+      scw=SC.Widget(frame);
+
+      scw.bind(SC.Widget.Events.READY,function(){
+        if(scActiveSeq!==playSeq||!cur()||!cur().sc)return;
+        scLoadedSeq=playSeq;
+        scReady=true;
+        if(scWantPlay)scw.play();
+      });
+
+      scw.bind(SC.Widget.Events.PLAY,function(){
+        if(scLoadedSeq!==playSeq||scActiveSeq!==playSeq||!cur()||!cur().sc)return;
+        scPlaying=true;
+        scWantPlay=true;
+        $('#pPlay').innerHTML=PAUSE;
+        render();
+      });
+
+      scw.bind(SC.Widget.Events.PAUSE,function(){
+        if(scLoadedSeq!==playSeq||scActiveSeq!==playSeq||!cur()||!cur().sc)return;
+        scPlaying=false;
+        scWantPlay=false;
+        $('#pPlay').innerHTML=PLAY;
+        render();
+      });
+
+      scw.bind(SC.Widget.Events.FINISH,function(){
+        if(scLoadedSeq!==playSeq||scActiveSeq!==playSeq||!cur()||!cur().sc)return;
+        scPlaying=false;
+        if(repOn()){
+          scw.seekTo(0);
+          scw.play();
+        }else{
+          step(1);
+        }
+      });
+
+      scw.bind(SC.Widget.Events.PLAY_PROGRESS,function(e){
+        if(scLoadedSeq!==playSeq||scActiveSeq!==playSeq||!cur()||!cur().sc)return;
+        var v=e.duration?e.currentPosition/e.duration*1000:0;
+        $('#seek').value=v;
+        $('#seek').style.setProperty('--p',v/10+'%');
+        $('#tC').textContent=fmt(e.currentPosition/1000);
+        $('#tD').textContent=fmt(e.duration/1000);
+      });
+    });
+  }
+  var _play=play;
+  play=function(list,i){
+    var seq=++playSeq;
+    var t=list[i];
+    if(!t)return;
+    queue=list.slice();idx=i;
+    ytPlaying=false;scPlaying=false;scWantPlay=false;
+    stopT();audio.pause();
+    if(ytp&&ytReady)ytStop();
+    if(scw&&scReady&&!t.sc){
+      scActiveSeq=seq;
+      scw.pause();
+    }
+
+    $('#pArt').src=t.art||'';
+    $('#pTitle').textContent=t.name||'Bilinmeyen şarkı';
+    $('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
+    $('#player').classList.add('show');
+    $('#seek').value=0;
+    $('#seek').style.setProperty('--p','0%');
+    $('#tC').textContent='0:00';
+    $('#tD').textContent='0:00';
+    $('#pPlay').innerHTML=PLAY;
+    requestAnimationFrame(marquee);
+    render();
+    if(t&&t.yt){
+      if(scw&&scReady)scw.pause();
+      scPlaying=false;audio.pause();
+      queue=list.slice();idx=i;
+      $('#pArt').src=t.art;$('#pTitle').textContent=t.name;
+      $('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
+      $('#player').classList.add('show');requestAnimationFrame(marquee);
+      $('#seek').value=0;$('#seek').style.setProperty('--p','0%');
+      $('#tC').textContent='0:00';$('#tD').textContent='0:00';
+      ytLoad(t.yt,seq);render();
+    }else if(t&&t.sc){
+      audio.pause();ytStop();
+      queue=list.slice();idx=i;
+      $('#pArt').src=t.art||'';
+      $('#pTitle').textContent=t.name;
+      $('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
+      $('#player').classList.add('show');requestAnimationFrame(marquee);
+      $('#seek').value=0;$('#seek').style.setProperty('--p','0%');
+      $('#tC').textContent='0:00';$('#tD').textContent='0:00';
+      scLoad(t.url,seq);render();
+    }else{
+      ytStop();
+      if(scw&&scReady)scw.pause();
+      scPlaying=false;
+      _play(list,i);
+    }
+  };
+
+  $('#pPlay').onclick=function(){togglePlay()};
+  $('#seek').oninput=function(e){
+    var c=cur();
+    if(c&&c.yt){
+      if(ytp&&ytReady){var d=ytp.getDuration()||0;if(d)ytp.seekTo(e.target.value/1000*d,true)}
+    }else if(c&&c.sc){
+      if(scw&&scReady){var v=Number(e.target.value);scw.getDuration(function(d){if(d)scw.seekTo(v/1000*d)})}
+    }else if(audio.duration)audio.currentTime=e.target.value/1000*audio.duration;
+  };
+  function addRows(){
+    return L.new.map(function(t,i){
+      var on=cur()&&cur().id===t.id,pl=on&&isPl();
+      return '<div class="row'+(on?' on':'')+'" data-l="new" data-i="'+i+'">'
+        +'<img src="'+esc(t.art)+'" alt="" loading="lazy">'
+        +'<div class="t"><b>'+esc(t.name)+'</b><small>'+(pl?'Şu anda çalıyor…':esc(t.artist||'YouTube'))+'</small></div>'
+        +'<button class="pl" aria-label="Çal">'+(pl?PAUSE:PLAY)+'</button></div>';
+    }).join('');
+  }
+  window.renderSharedManage=function(){
+    var box=$('#sharedManage'),list=$('#sharedList');
+    if(!box||!list)return;
+    box.style.display=window._as===true?'':'none';
+    if(window._as!==true)return;
+    list.innerHTML=L.new.length?L.new.map(function(t){
+      return '<div class="row">'
+        +'<img src="'+esc(t.art)+'" alt="" loading="lazy">'
+        +'<div class="t"><b>'+esc(t.name)+'</b><small>'+esc(t.artist||'Bilinmeyen sanatçı')+'</small></div>'
+        +'<button class="danger" data-shared-del="'+esc(t.id)+'">Sil</button></div>';
+    }).join(''):'<div class="empty">Ortak listede şarkı yok.</div>';
+  };
+  $('#sharedList').addEventListener('click',async function(e){
+    var b=e.target.closest('[data-shared-del]');
+    if(!b||window._as!==true)return;
+    var id=b.dataset.sharedDel;
+    if(!confirm('Bu şarkı bütün kullanıcılardan silinsin mi?'))return;
+    b.disabled=true;
+    var result=await window.novaDb.from('songs').delete().eq('song_key',id);
+    if(result.error){
+      alert('Silinemedi: '+result.error.message);
+      b.disabled=false;
+      return;
+    }
+    L.new=L.new.filter(function(t){return t.id!==id});
+    if(window.refreshHomeRows)window.refreshHomeRows();
+    window.renderSharedManage();
+  });
+  var _render=render;
+  render=function(){
+    _render();
+    var h=L.new.length?addRows():'<div class="empty">Henüz ortak listeye şarkı eklenmedi.</div>';
+    $('#addList').innerHTML=h;$('#addHome').innerHTML=h;
+  };
+  function onDel(e){
+    var d=e.target.closest('[data-del]');if(!d)return;
+    e.stopPropagation();
+    var id=d.dataset.del;
+    L.add=L.add.filter(function(t){return t.id!==id});
+    saveAdd();render();
+  }
+  $('#addList').addEventListener('click',onDel);
+  $('#addHome').addEventListener('click',onDel);
+
+  function ytId(u){
+    try{
+      var x=new URL(u.indexOf('http')===0?u:'https://'+u),id='';
+      if(x.hostname.indexOf('youtu')<0)return '';
+      if(x.hostname==='youtu.be')id=x.pathname.split('/')[1]||'';
+      else if(x.searchParams.get('v'))id=x.searchParams.get('v');
+      else{var p=x.pathname.split('/');if(['shorts','embed','live','v'].indexOf(p[1])>-1)id=p[2]||''}
+      return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';
+    }catch(e){return ''}
+  }
+  async function meta(id){
+    var u='https://www.youtube.com/watch?v='+id;
+    var ends=['https://www.youtube.com/oembed?format=json&url=','https://noembed.com/embed?url='];
+    for(var i=0;i<ends.length;i++){
+      try{
+        var r=await fetch(ends[i]+encodeURIComponent(u));if(!r.ok)continue;
+        var j=await r.json();
+        if(j&&j.title)return{title:j.title,author:j.author_name||''};
+      }catch(e){}
+    }
+    return{title:'YouTube şarkısı',author:''};
+  }
+  function msg(t,ok){var m=$('#ytMsg');m.textContent=t;m.style.color=ok?'var(--g)':'var(--mut)'}
+  function hashUrl(u){
+    var h=0;for(var i=0;i<u.length;i++)h=((h<<5)-h+u.charCodeAt(i))|0;
+    return Math.abs(h).toString(36);
+  }
+  function scUrl(u){
+    try{
+      var x=new URL(u);
+      return /(^|\.)soundcloud\.com$|(^|\.)on\.soundcloud\.com$/.test(x.hostname)?x.href:'';
+    }catch(e){return ''}
+  }
+  function mp3Url(u){
+    try{
+      var x=new URL(u);
+      return /^https?:$/.test(x.protocol)&&/\.mp3$/i.test(x.pathname)?x.href:'';
+    }catch(e){return ''}
+  }
+  async function scMeta(u){
+    try{
+      var r=await fetch('https://soundcloud.com/oembed?format=json&url='+encodeURIComponent(u));
+      if(r.ok){var j=await r.json();var m=(j.html||'').match(/api\.soundcloud\.com\/tracks\/(\d+)/);return{title:j.title||'SoundCloud parçası',author:j.author_name||'',art:j.thumbnail_url||'',track:m?m[1]:''}}
+    }catch(e){}
+    return{title:'SoundCloud parçası',author:'',art:''};
+  }
+  async function addLink(){
+    var raw=$('#ytIn').value.trim();
+    var sm=raw.match(/https?:\/\/on\.soundcloud\.com\/[\w-]+/i);
+    if(sm){try{var rr=await fetch('/api/sc-resolve?u='+encodeURIComponent(sm[0]));if(!rr.ok)throw new Error('resolve failed');var sj=await rr.json();if(!sj.url||!/^https?:\/\/(www\.)?soundcloud\.com\//i.test(sj.url))throw new Error('invalid URL');raw=sj.url}catch(e){msg('SoundCloud kısa bağlantısı çözümlenemedi.');return;}}
+    raw=raw.replace(/(soundcloud\.com\/[^?\s]+)\?\S*/i,function(m,p){return p});
+    var id=ytId(raw),url='',item=null;
+    var b=$('#ytAdd');b.disabled=true;msg('Bağlantı kontrol ediliyor…');
+    try{
+      if(/^https?:\/\/(?:www\.)?soundcloud\.com\/[^/?#]+\/sets\/[^/?#]+/i.test(raw)){
+        var authResult=await window.novaDb.auth.getUser();
+        if(authResult.error)throw authResult.error;
+        if(!authResult.data.user)throw new Error('Playlist eklemek için giriş yapmalısın.');
+
+        var playlistMeta=await scMeta(raw);
+        var playlistTitle=playlistMeta.title||'SoundCloud Playlist';
+
+        var playlistInsert=await window.novaDb.from('soundcloud_playlists').insert({
+          url:raw,
+          title:playlistTitle,
+          author:playlistMeta.author||'SoundCloud',
+          artwork:playlistMeta.art||'',
+          added_by:authResult.data.user.id
+        });
+
+        if(playlistInsert.error){
+          if(playlistInsert.error.code==='23505')throw new Error('Bu playlist zaten ekli.');
+          throw playlistInsert.error;
+        }
+
+        $('#ytIn').value='';
+        await window.loadScPlaylists();
+        msg('Playlist herkese açık olarak eklendi: '+playlistTitle,true);
+        return;
+      }
+
+      if(id){
+        if(L.new.some(function(t){return t.id==='yt_'+id})){msg('Bu şarkı zaten ekli.');return}
+        var info=await meta(id);
+        item={id:'yt_'+id,yt:id,name:info.title,artist:info.author,art:'https://i.ytimg.com/vi/'+id+'/hqdefault.jpg',url:''};
+      }else if(url=scUrl(raw)){
+        var key='sc_'+hashUrl(url);
+        if(L.new.some(function(t){return t.id===key})){msg('Bu şarkı zaten ekli.');return}
+        var si=await scMeta(url);
+        item={id:key,sc:true,name:si.title,artist:si.author,art:si.art,url:url,track:si.track};
+      }else if(url=mp3Url(raw)){
+        var key='mp3_'+hashUrl(url);
+        if(L.new.some(function(t){return t.id===key})){msg('Bu şarkı zaten ekli.');return}
+        var name=decodeURIComponent(new URL(url).pathname.split('/').pop()).replace(/\.mp3$/i,'').replace(/[-_]+/g,' ');
+        item={id:key,name:name||'MP3 şarkısı',artist:'',art:L.trend[0]?L.trend[0].art:'',url:url};
+      }else{
+        msg('Geçerli bir YouTube, SoundCloud veya doğrudan MP3 bağlantısı gir.');
+        return;
+      }
+      item.addedAt=Date.now();
+      if(!window.novaDb)throw new Error('Supabase bağlantısı yok');
+      var {error:dbError}=await window.novaDb.from('songs').insert({
+        song_key:item.id,
+        title:item.name,
+        artist:item.artist||'',
+        artwork:item.art||'',
+        url:item.url||'',
+        youtube_id:item.yt||'',
+        soundcloud:!!item.sc,
+        soundcloud_track:item.track||''
+      });
+      if(dbError)throw dbError;
+      item.createdAt=Date.now();L.new.unshift(item);L.add.unshift(item);saveAdd();render();if(window.renderSharedManage)window.renderSharedManage();$('#ytIn').value='';
+      msg('Eklendi: '+item.name,true);
+    }catch(e){msg('Bağlantı eklenemedi. Tekrar dene.')}
+    finally{b.disabled=false}
+  }
+  $('#ytAdd').onclick=addLink;
+  $('#ytIn').addEventListener('keydown',function(e){if(e.key==='Enter')addLink()});
+})();
+L.fav=loadFavs();render();loadTrend();
+</script>
+
+<script>
+(function(){
+  const SUPABASE_URL = 'https://igcmeihdkxkczzgneioa.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_XPy0o9PDLBgukREOKQpG4A_AY3gJNs7';
+
+  if (!window.supabase || !window.supabase.createClient) {
+    document.getElementById('accountStatus').textContent = 'Supabase kütüphanesi yüklenemedi.';
+    return;
+  }
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  window.novaDb = db;
+
+  async function loadNewSongs(){
+    const {data,error}=await db.from('songs')
+      .select('song_key,title,artist,artwork,url,youtube_id,soundcloud,soundcloud_track,created_at')
+      .order('created_at',{ascending:false});
+    if(error){console.error('Yeni şarkılar yüklenemedi:',error);return;}
+    L.new=(data||[]).map(function(x){
+      return {id:x.song_key,name:x.title,artist:x.artist||'',art:x.artwork||'',
+        url:x.url||'',yt:x.youtube_id||'',sc:!!x.soundcloud,track:x.soundcloud_track||'',createdAt:x.created_at?new Date(x.created_at).getTime():0};
+    });
+    if(typeof window.refreshHomeRows==='function')window.refreshHomeRows();
+    if(typeof window.renderSharedManage==='function')window.renderSharedManage();
+    render();
+  }
+  loadNewSongs();
+  const login = document.getElementById('googleLogin');
+  const logout = document.getElementById('googleLogout');
+  const status = document.getElementById('accountStatus');
+  const switchAccountBtn = document.getElementById('switchGoogleAccount');
+  const ACCOUNT_KEY = 'nova_saved_google_accounts_v1';
+
+  function getSavedAccounts() {
+    try { return JSON.parse(localStorage.getItem(ACCOUNT_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+
+  function saveAccountSession(session) {
+    if (!session || !session.user) return;
+    try {
+      const accounts = getSavedAccounts().filter(a => a.user?.id !== session.user.id);
+      accounts.unshift({
+        user: {
+          id: session.user.id,
+          email: session.user.email,
+          user_metadata: session.user.user_metadata,
+          created_at: session.user.created_at
+        },
+        access_token: session.access_token,
+        refresh_token: session.refresh_token
+      });
+      localStorage.setItem(ACCOUNT_KEY, JSON.stringify(accounts.slice(0, 10)));
+      refreshAccountButtons(session);
+    } catch(e) {
+      console.error('Hesap kaydedilemedi:', e);
+      status.textContent = 'Hesap cihazda saklanamadı.';
+    }
+  }
+
+  function refreshAccountButtons(session) {
+    const accounts = getSavedAccounts();
+    switchAccountBtn.style.display = session && accounts.length ? '' : 'none';
+  }
+
+  async function updateAccount(session) {
+    refreshAccountButtons(session);
+    const nameEl = document.getElementById('profileName');
+    const roleEl = document.getElementById('profileRole');
+    const details = document.getElementById('profileDetails');
+    const avatar = document.getElementById('profileAvatar');
+    const fallback = document.getElementById('profileAvatarFallback');
+
+    if (!session) {
+      status.textContent = 'Henüz giriş yapmadın.';
+      nameEl.textContent = 'Misafir kullanıcı';
+      roleEl.textContent = 'Giriş yapılmadı';
+      details.style.display = 'none';
+      avatar.style.display = 'none';
+      fallback.style.display = 'grid';
+      login.style.display = '';
+      logout.style.display = 'none';
+    document.getElementById('openProfileEdit').style.display='none';
+    document.getElementById('openProfileEdit').parentElement.style.display='none';
+    logout.parentElement.style.display='none';
+    window.adminUI&&window.adminUI(null);
+      return;
+    }
+
+    login.style.display = 'none';
+    logout.style.display = '';
+    document.getElementById('openProfileEdit').style.display='';
+    document.getElementById('openProfileEdit').parentElement.style.display='';
+    logout.parentElement.style.display='';
+    details.style.display = 'block';
+    status.textContent = 'Hesap bilgileri yükleniyor…';
+
+    const { data, error } = await db
+      .from('profiles')
+      .select('username, role, avatar_url, created_at')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    const meta = session.user.user_metadata || {};
+    const name = data?.username || meta.full_name || meta.name || 'Kullanıcı';
+
+    nameEl.textContent = name;
+    roleEl.textContent = data?.role === 'admin' ? 'Admin' : 'Normal Üye';
+    window.adminUI&&window.adminUI(data?.role === 'admin');
+    document.getElementById('profileUsername').value = data?.username || name;
+    document.getElementById('profileEmail').textContent = session.user.email || '-';
+
+    const created = data?.created_at || session.user.created_at;
+    document.getElementById('profileCreated').textContent = created
+      ? new Date(created).toLocaleDateString('tr-TR')
+      : '-';
+
+    const photo = data?.avatar_url || meta.avatar_url || meta.picture;
+    if (photo) {
+      avatar.src = photo;
+      avatar.style.display = 'block';
+      fallback.style.display = 'none';
+      avatar.onerror = () => {
+        avatar.style.display = 'none';
+        fallback.style.display = 'grid';
+      };
+    } else {
+      avatar.style.display = 'none';
+      fallback.style.display = 'grid';
+    }
+
+    status.textContent = error
+      ? 'Giriş yapıldı. Profil bilgileri tam alınamadı.'
+      : 'Google hesabın bağlı.';
+  }
+
+  window.adminUI=function(a){window._as=a;var na=document.getElementById('navAdd');if(na)na.style.display=a?'':'none';if(!a&&document.getElementById('v-add').classList.contains('on')){document.querySelector('nav button[data-v="home"]').click()}var c=document.getElementById('adminCard');if(!c)return;c.style.display=(a===null||a===undefined)?'none':'';document.getElementById('adminIn').style.display=a?'none':'';document.getElementById('adminGo').style.display=a?'none':'';document.getElementById('adminOut').style.display=a?'':'none';document.getElementById('adminState').textContent=a?'Şu an adminsin.':'';};
+document.getElementById('adminGo').addEventListener('click',async function(){
+  var msg=document.getElementById('adminMsg'),inp=document.getElementById('adminIn'),code=inp.value.trim();
+  if(!code){msg.textContent='Şifreyi yaz.';return}
+  this.disabled=true;msg.textContent='Kontrol ediliyor…';
+  var res=await db.rpc('claim_admin',{p_code:code});
+  this.disabled=false;
+  if(res.error){msg.textContent='Hata: '+res.error.message;return}
+  var m={ok:'Admin oldun.',already:'Zaten adminsin.',invalid:'Şifre yanlış ya da kullanılmış.',login:'Önce giriş yapmalısın.'};
+  msg.textContent=m[res.data]||('Beklenmeyen sonuç: '+res.data);
+  if(res.data==='ok'||res.data==='already'){inp.value='';document.getElementById('profileRole').textContent='Admin';window.adminUI(true)}
+});
+document.getElementById('adminOut').addEventListener('click',async function(){
+  var msg=document.getElementById('adminMsg');
+  this.disabled=true;msg.textContent='Çıkılıyor…';
+  var res=await db.rpc('release_admin');
+  this.disabled=false;
+  if(res.error){msg.textContent='Hata: '+res.error.message;return}
+  if(res.data==='ok'){msg.textContent='Adminlikten çıktın.';document.getElementById('profileRole').textContent='Normal Üye';window.adminUI(false)}
+  else{msg.textContent='Sonuç: '+res.data}
+});
+window.adminUI(window._as);
+document.getElementById('reqSend').addEventListener('click',async function(){
+  var msg=document.getElementById('reqMsg'),t=document.getElementById('reqText'),body=t.value.trim();
+  if(!body){msg.textContent='Önce isteğini yaz.';return}
+  var sd=await db.auth.getSession();
+  if(!sd.data.session){msg.textContent='İstek göndermek için önce giriş yapmalısın.';return}
+  this.disabled=true;msg.textContent='Gönderiliyor…';
+  var res=await db.from('requests').insert({body:body});
+  this.disabled=false;
+  if(res.error){msg.textContent='Gönderilemedi: '+res.error.message;return}
+  t.value='';msg.textContent='İsteğin gönderildi, teşekkürler.';
+  try{
+    var who=(sd.data.session.user.email||'bilinmiyor');
+    fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:'service_lf9gnhc',template_id:'template_26aa1ln',user_id:'LfultxC-WcdufToOq',template_params:{message:'Gönderen: '+who+'\n\n'+body}})}).catch(function(){});
+  }catch(e){}
+});
+(function(){
+var bell=document.getElementById('bellBtn'),dot=document.getElementById('bellDot'),pan=document.getElementById('notifPanel'),list=document.getElementById('notifList');
+async function load(open){
+  var sd=await db.auth.getSession(),ses=sd.data.session;
+  if(!ses){bell.style.display='none';return}
+  bell.style.display='grid';
+  var r=await db.from('notifications').select('id,body,is_read,created_at').order('created_at',{ascending:false}).limit(30);
+  if(r.error){if(open)list.textContent='Yüklenemedi: '+r.error.message;return}
+  var rows=r.data||[],unread=rows.filter(function(x){return !x.is_read}).length;
+  dot.style.display=(unread&&!open)?'block':'none';bell.querySelector('svg').style.stroke=(unread&&!open)?'#ff3b30':'';/*bellRed*/
+  if(!open)return;
+  list.textContent='';
+  if(!rows.length){list.textContent='Bildirimin yok.';return}
+  rows.forEach(function(n){
+    var c=document.createElement('div');c.className='card';c.style.marginTop='12px';
+    var b=document.createElement('div');b.textContent=n.body;
+    var d=document.createElement('small');d.style.cssText='display:block;margin-top:6px;color:var(--mut)';d.textContent=new Date(n.created_at).toLocaleString('tr-TR');
+    c.style.touchAction='pan-y';c.style.transition='transform .2s,opacity .2s';
+    (function(c,id){var x0=null,dx=0;/*notifSwipe*/
+      c.onpointerdown=function(e){x0=e.clientX;dx=0;c.style.transition='none';try{c.setPointerCapture(e.pointerId)}catch(_){}};
+      c.onpointermove=function(e){if(x0===null)return;dx=Math.max(0,e.clientX-x0);c.style.transform='translateX('+dx+'px)';c.style.opacity=String(1-Math.min(dx/300,.7))};
+      c.onpointerup=c.onpointercancel=async function(){
+        if(x0===null)return;x0=null;c.style.transition='transform .2s,opacity .2s';
+        if(dx>100){
+          c.style.transform='translateX(110%)';c.style.opacity='0';
+          await db.from('notifications').delete().eq('id',id);
+          setTimeout(function(){c.remove();if(!list.children.length)list.textContent='Bildirimin yok.'},200);
+        }else{c.style.transform='';c.style.opacity=''}
+      };
+    })(c,n.id);
+    c.appendChild(b);c.appendChild(d);list.appendChild(c);
+  });
+  if(unread){await db.from('notifications').update({is_read:true}).eq('user_id',ses.user.id).eq('is_read',false);dot.style.display='none';bell.querySelector('svg').style.stroke=''}
+}
+bell.onclick=function(){pan.style.display='block';list.textContent='Yükleniyor…';load(true)};
+document.getElementById('notifBack').onclick=function(){pan.style.display='none'};
+db.auth.onAuthStateChange(function(){load(false)});
+setInterval(function(){if(pan.style.display!=='block')load(false)},15000);document.addEventListener('visibilitychange',function(){if(!document.hidden&&pan.style.display!=='block')load(false)});
+load(false);
+})();
+(function(){
+var box=document.createElement('div');box.id='adminReqs';box.style.display='none';
+box.innerHTML='<div class="eb" style="margin-top:28px">ADMIN</div><h2 style="font-size:24px;font-weight:700;margin-top:6px">Gelen istekler</h2><button class="btn" id="reqRefresh" style="margin-top:12px">Yenile</button><div id="reqList" style="margin-top:6px"></div>';
+document.getElementById('v-request').appendChild(box);
+var list=document.getElementById('reqList');
+async function loadReqs(){
+  list.textContent='Yükleniyor…';
+  var r=await db.from('requests').select('id,user_id,body,created_at').order('created_at',{ascending:false}).limit(50);
+  if(r.error){list.textContent='Yüklenemedi: '+r.error.message;return}
+  var rows=r.data||[];list.textContent='';
+  if(!rows.length){list.textContent='Henüz istek yok.';return}
+  rows.forEach(function(q){
+    var c=document.createElement('div');c.className='card';c.style.marginTop='12px';
+    var b=document.createElement('div');b.textContent=q.body;b.style.whiteSpace='pre-wrap';b.style.wordBreak='break-word';
+    var d=document.createElement('small');d.style.cssText='display:block;margin-top:6px;color:var(--mut)';d.textContent=new Date(q.created_at).toLocaleString('tr-TR');
+    var g=document.createElement('button');g.className='btn';g.style.marginTop='10px';g.textContent='Şarkı eklendi bildirimi gönder';
+    g.onclick=async function(){
+      g.disabled=true;g.textContent='Gönderiliyor…';
+      var n=await db.from('notifications').insert({user_id:q.user_id,body:'İstediğin şarkı eklendi 🎵 ('+q.body.slice(0,60)+')'});
+      if(n.error){g.disabled=false;g.textContent='Hata: '+n.error.message;return}
+      g.textContent='Bildirim gönderildi ✓';
+      setTimeout(async function(){
+        var dl=await db.from('requests').delete().eq('id',q.id);
+        if(dl.error){g.textContent='Silinemedi: '+dl.error.message;return}
+        c.remove();/*req_del_done*/
+        if(!list.children.length)list.textContent='Henüz istek yok.';
+      },10000);
+    };
+    c.appendChild(b);c.appendChild(d);c.appendChild(g);list.appendChild(c);
+  });
+}
+document.getElementById('reqRefresh').onclick=loadReqs;
+document.querySelector('nav button[data-v="request"]').addEventListener('click',function(){if(window._as)loadReqs()});
+var old=window.adminUI;
+window.adminUI=function(a){old(a);box.style.display=a?'':'none';if(window.renderSharedManage)window.renderSharedManage()};
+window.adminUI(window._as);
+})();
+document.getElementById('saveProfile').addEventListener('click', async function() {
+    const message = document.getElementById('profileMessage');
+    const username = document.getElementById('profileUsername').value.trim();
+    const { data: sessionData } = await db.auth.getSession();
+    const session = sessionData.session;
+
+    if (!session) {
+      message.textContent = 'Önce giriş yapmalısın.';
+      return;
+    }
+    if (!username) {
+      message.textContent = 'Kullanıcı adı boş olamaz.';
+      return;
+    }
+
+    this.disabled = true;
+    message.textContent = 'Kaydediliyor…';
+
+    const { error } = await db
+      .from('profiles')
+      .update(window.pendingAvatar ? { username, avatar_url: window.pendingAvatar } : { username })
+      .eq('id', session.user.id);
+
+    this.disabled = false;
+
+    if (error) {
+      message.textContent = 'Kaydedilemedi: ' + error.message;
+      return;
+    }
+
+    document.getElementById('profileName').textContent = username;
+    if (window.pendingAvatar) { const av=document.getElementById('profileAvatar'); av.src=window.pendingAvatar; av.style.display='block'; document.getElementById('profileAvatarFallback').style.display='none'; window.pendingAvatar=null; }
+    message.textContent = 'Kullanıcı adı kaydedildi.';
+  });
+
+  login.addEventListener('click', async function(){
+    login.disabled = true;
+    status.textContent = 'Google giriş sayfası açılıyor…';
+    const { error } = await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://bnmisac12w-coder.github.io/Nova-music-link/',
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+    if (error) status.textContent = 'Giriş başlatılamadı: ' + error.message;
+    login.disabled = false;
+  });
+
+  async function addAnotherGoogleAccount() {
+    const { data } = await db.auth.getSession();
+    if (data.session) saveAccountSession(data.session);
+
+    status.textContent = 'Yeni Google hesabı seçiliyor…';
+    const { error } = await db.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://bnmisac12w-coder.github.io/Nova-music-link/',
+        queryParams: { prompt: 'select_account' }
+      }
+    });
+    if (error) status.textContent = 'Hesap eklenemedi: ' + error.message;
+  }
+
+  let accountModal;
+
+  function showAccountModal() {
+    const accounts = getSavedAccounts();
+
+    if (accounts.length <= 1) {
+      addAnotherGoogleAccount();
+      return;
+    }
+
+    if (!accountModal) {
+      accountModal = document.createElement('div');
+      accountModal.style.cssText = 'position:fixed;inset:0;background:#000b;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:var(--panel,#171c27);color:var(--text,#fff);width:100%;max-width:380px;border-radius:18px;padding:20px;max-height:80vh;overflow:auto;';
+      const heading = document.createElement('h3');
+      heading.textContent = 'Hesap seç';
+      panel.appendChild(heading);
+
+      const list = document.createElement('div');
+      list.id = 'novaSavedAccountList';
+      list.style.marginTop = '15px';
+      panel.appendChild(list);
+
+      const add = document.createElement('button');
+      add.className = 'btn';
+      add.textContent = '+ Başka hesap ekle';
+      add.style.marginTop = '12px';
+      add.onclick = () => {
+        accountModal.remove();
+        accountModal = null;
+        addAnotherGoogleAccount();
+      };
+      panel.appendChild(add);
+
+      const close = document.createElement('button');
+      close.className = 'btn';
+      close.textContent = 'Kapat';
+      close.style.marginTop = '8px';
+      close.onclick = () => {
+        accountModal.remove();
+        accountModal = null;
+      };
+      panel.appendChild(close);
+      accountModal.appendChild(panel);
+    }
+
+    const list = accountModal.querySelector('#novaSavedAccountList');
+    list.replaceChildren();
+
+    db.auth.getSession().then(({data}) => {
+      const activeId = data.session?.user?.id;
+
+      accounts.forEach((account) => {
+        const button = document.createElement('button');
+        button.className = 'btn';
+        button.style.cssText = 'display:block;width:100%;margin-top:8px;text-align:left;';
+        button.textContent =
+          (account.user.id === activeId ? '✓ ' : '') +
+          (account.user.email || 'Google hesabı');
+
+        button.onclick = async () => {
+          if (account.user.id === activeId) {
+            accountModal.remove();
+            accountModal = null;
+            return;
+          }
+
+          status.textContent = 'Hesap değiştiriliyor…';
+          const result = await db.auth.setSession({
+            access_token: account.access_token,
+            refresh_token: account.refresh_token
+          });
+
+          if (result.error) {
+            status.textContent = 'Hesap açılamadı: ' + result.error.message;
+            return;
+          }
+
+          accountModal.remove();
+          accountModal = null;
+          status.textContent = 'Hesap değiştirildi.';
+        };
+
+        list.appendChild(button);
+      });
     });
 
-    if (!r.ok) throw new Error("Bağlantı hatası");
+    document.body.appendChild(accountModal);
+  }
 
-    const data = await r.json();
-    const url = data?.[0]?.url;
+  switchAccountBtn.addEventListener('click', showAccountModal);
 
-    if (!url || !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(url))
-      throw new Error("Sunucu henüz hazır değil");
+  logout.addEventListener('click', async function(){
+    const { error } = await db.auth.signOut();
+    if (error) {
+      status.textContent = 'Çıkış yapılamadı: ' + error.message;
+      return;
+    }
+    await updateAccount(null);
+  });
 
-    document.getElementById("status").textContent = "NOVA Music açılıyor...";
-    location.replace(url + location.search + location.hash);
+  db.auth.getSession().then(({data}) => {
+    if (data.session) saveAccountSession(data.session);
+    updateAccount(data.session);
+  });
+  db.auth.onAuthStateChange((_event, session) => {
+    if (session) saveAccountSession(session);
+    updateAccount(session);
+  });
+})();
+</script>
 
-  } catch (e) {
-    document.getElementById("status").textContent =
-      "Sunucu bekleniyor... 5 saniye sonra tekrar denenecek.";
+
+<style>/*nova-renk*/
+#novaLists{background:linear-gradient(160deg,rgba(108,92,231,.38),rgba(0,184,217,.16))!important;border:1px solid rgba(140,120,255,.45)!important}
+#novaFavs{background:linear-gradient(160deg,rgba(255,60,120,.34),rgba(255,150,60,.15))!important;border:1px solid rgba(255,90,130,.45)!important}
+#novaLists>div:first-child{color:#cfc6ff!important}
+#novaFavs>div:first-child{color:#ffa6c1!important}
+.nv-c0>button:first-child{background:linear-gradient(90deg,#6c5ce7,#a855f7)!important;color:#fff!important}
+.nv-c1>button:first-child{background:linear-gradient(90deg,#0984e3,#00cec9)!important;color:#fff!important}
+.nv-c2>button:first-child{background:linear-gradient(90deg,#e84393,#ff7675)!important;color:#fff!important}
+.nv-c3>button:first-child{background:linear-gradient(90deg,#00b894,#55a3ff)!important;color:#fff!important}
+.nv-c4>button:first-child{background:linear-gradient(90deg,#f39c12,#e17055)!important;color:#fff!important}
+.nv-track{background:linear-gradient(90deg,var(--a),rgba(255,255,255,.04))!important;border-left:4px solid var(--b)!important}
+.nv-t0{--a:rgba(108,92,231,.38);--b:#a855f7}
+.nv-t1{--a:rgba(9,132,227,.38);--b:#00cec9}
+.nv-t2{--a:rgba(232,67,147,.38);--b:#ff7675}
+.nv-t3{--a:rgba(0,184,148,.36);--b:#55a3ff}
+.nv-t4{--a:rgba(243,156,18,.36);--b:#e17055}
+.nv-tf{--a:rgba(255,60,120,.34);--b:#ff4d88}
+</style>
+<script>/*nova-renk*/
+(function(){
+var lb=document.getElementById('novaLists'),fb=document.getElementById('novaFavs');
+if(!lb||!fb)return;
+function paint(){
+  var ci=-1;
+  Array.prototype.forEach.call(lb.children,function(n,k){
+    if(k===0)return;
+    if(n.tagName==='BUTTON'){if(ci>=0)n.classList.add('nv-track','nv-t'+(ci%5))}
+    else if(n.children.length===3){ci++;n.classList.add('nv-c'+(ci%5))}
+  });
+  Array.prototype.forEach.call(fb.children,function(n,k){
+    if(k>0&&n.tagName==='BUTTON')n.classList.add('nv-track','nv-tf');
+  });
+}
+new MutationObserver(paint).observe(lb,{childList:true});
+new MutationObserver(paint).observe(fb,{childList:true});
+paint();
+})();
+</script>
+<script>/*nova-sync*/
+(function(){
+var db=window.novaDb;if(!db)return;
+var uid=null,pulling=false,timer=null;
+var rawSet=Storage.prototype.setItem;
+function lj(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}}
+function setLocal(k,v){rawSet.call(localStorage,k,JSON.stringify(v))}
+async function push(){
+  if(!uid)return;
+  try{await db.from('user_data').upsert({user_id:uid,favs:lj('nova_favs'),playlists:lj('nova_playlists'),updated_at:new Date().toISOString()}).then(function(r){if(r.error)console.log('kayit hatasi',r.error.message)})}catch(e){}
+}
+Storage.prototype.setItem=function(k,v){
+  rawSet.apply(this,arguments);
+  if(!pulling&&uid&&(k==='nova_favs'||k==='nova_playlists')){clearTimeout(timer);timer=setTimeout(push,1500)}
+};
+async function pull(){
+  pulling=true;
+  try{
+    var r=await db.from('user_data').select('favs,playlists').eq('user_id',uid).maybeSingle();
+    if(r.error)return;
+    if(r.data){
+      setLocal('nova_favs',r.data.favs||[]);
+      setLocal('nova_playlists',r.data.playlists||[]);
+      if(typeof L!=='undefined')L.fav=r.data.favs||[];
+      if(typeof render==='function')render();
+      if(window.novaRenderAbout)window.novaRenderAbout();
+    }else{await push()}
+  }catch(e){}finally{pulling=false}
+}
+function setUser(u){
+  if(u&&u.id!==uid){uid=u.id;setTimeout(pull,0)}
+  else if(!u){uid=null}
+}
+db.auth.getSession().then(function(s){setUser(s.data&&s.data.session&&s.data.session.user)});
+db.auth.onAuthStateChange(function(ev,sess){setUser(sess&&sess.user)});
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function(e) {
+      console.log('PWA kaydı yapılamadı:', e);
+    });
+  });
+}
+</script>
+
+
+
+<script id="nova-sc-playlists">
+(function(){
+  'use strict';
+
+  var row=document.getElementById('hScPlaylists');
+  if(!row)return;
+
+  var items=[];
+  var style=document.createElement('style');
+  style.textContent=`
+    #scPlaylistPlayer{margin-top:20px}
+    #scPlaylistPlayer iframe{width:100%;height:430px;border:0;border-radius:14px;background:var(--panel)}
+    #scPlaylistPlayer .scpp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    #scPlaylistPlayer .scpp-close{border:0;background:var(--panel);color:var(--tx);border-radius:10px;padding:9px 13px}
+  `;
+  document.head.appendChild(style);
+
+  var player=document.createElement('section');
+  player.id='scPlaylistPlayer';
+  player.hidden=true;
+  player.innerHTML=`
+    <div class="scpp-head">
+      <div><div class="eb">NOW PLAYING</div><h2 id="scppTitle"></h2><small id="scppAuthor"></small></div>
+      <button class="scpp-close" id="scppClose">Kapat</button>
+    </div>
+    <iframe id="scppFrame" title="SoundCloud Playlist Oynatıcı"
+      allow="autoplay" loading="lazy"></iframe>
+  `;
+  row.insertAdjacentElement('afterend',player);
+
+  function esc(v){
+    return String(v||'').replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function render(){
+    if(!items.length){
+      row.innerHTML='<div class="empty">Henüz ortak playlist eklenmemiş.</div>';
+      return;
+    }
+
+    row.innerHTML=items.map(function(x,i){
+      return '<div class="hc" data-scp="'+i+'">'+
+        '<img src="'+esc(x.artwork)+'" alt="" loading="lazy">'+
+        '<b>'+esc(x.title)+'</b>'+
+        '<small>'+esc(x.author||'SoundCloud')+'</small>'+
+      '</div>';
+    }).join('');
+  }
+
+  async function load(){
+    if(!window.novaDb){
+      row.innerHTML='<div class="empty">Supabase bağlantısı bekleniyor.</div>';
+      return;
+    }
+
+    var result=await window.novaDb
+      .from('soundcloud_playlists')
+      .select('id,url,title,author,artwork,created_at')
+      .order('created_at',{ascending:false});
+
+    if(result.error){
+      console.error('Playlistler yüklenemedi:',result.error);
+      row.innerHTML='<div class="empty">Playlistler yüklenemedi.</div>';
+      return;
+    }
+
+    items=result.data||[];
+    render();
+  }
+
+  window.loadScPlaylists=load;
+
+  row.addEventListener('click',function(e){
+    var card=e.target.closest('[data-scp]');
+    if(!card)return;
+
+    var item=items[Number(card.dataset.scp)];
+    if(!item)return;
+
+    document.getElementById('scppTitle').textContent=item.title;
+    document.getElementById('scppAuthor').textContent=item.author||'SoundCloud';
+
+    document.getElementById('scppFrame').src=
+      'https://w.soundcloud.com/player/?url='+
+      encodeURIComponent(item.url)+
+      '&auto_play=true&hide_related=true&show_comments=false&show_user=true&visual=true&show_artwork=true';
+
+    player.hidden=false;
+    player.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+
+  document.getElementById('scppClose').addEventListener('click',function(){
+    document.getElementById('scppFrame').src='about:blank';
+    player.hidden=true;
+  });
+
+  load();
+})();
+</script>
+
+<script>/*nova-tema-v1*/
+(function(){
+var KEY='nova_theme',root=document.documentElement;
+var T=[['default','Varsayılan','#0c0d0f'],['sakura','Sakura','#1a0f16'],['cyber','Cyberpunk','#0a0614'],['matrix','Matrix','#000000'],['noel','Noel','#0a1c16']];
+var grid=document.getElementById('themeGrid'),meta=document.querySelector('meta[name="theme-color"]');
+var mq=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):null;
+var cv=null,cx=null,W=0,H=0,raf=0,last=0,mode='',P=[],rt=0,CH='';
+for(var c=0xFF66;c<=0xFF9D;c++)CH+=String.fromCharCode(c);CH+='0123456789';
+var R=Math.random;
+function reduced(){return !!(mq&&mq.matches)}
+function get(){try{return localStorage.getItem(KEY)||'default'}catch(e){return 'default'}}
+
+var PC=['#ffb7d1','#ff9cc2','#ffd6e6','#ffc2da'];
+function mkPetal(top){return{x:R()*W,y:top?-20-R()*H*.3:R()*H,s:4.5+R()*5.5,vy:16+R()*26,vx:-4+R()*10,ph:R()*6.28,pf:.7+R()*1.1,pa:10+R()*20,r:R()*6.28,vr:-1.2+R()*2.4,a:.5+R()*.4,c:PC[R()*4|0]}}
+function initSakura(){P=[];var n=Math.max(12,Math.min(22,Math.round(W/18)));for(var i=0;i<n;i++)P.push(mkPetal(false))}
+function stepSakura(dt){
+  cx.clearRect(0,0,W,H);
+  for(var i=0;i<P.length;i++){var p=P[i];
+    p.ph+=p.pf*dt;p.y+=p.vy*dt;p.x+=(p.vx+Math.cos(p.ph)*p.pa)*dt;p.r+=p.vr*dt;
+    if(p.y>H+20||p.x<-30||p.x>W+30){P[i]=p=mkPetal(true)}
+    var s=p.s;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.scale(.55+.45*Math.abs(Math.cos(p.ph*1.3)),1);
+    cx.globalAlpha=p.a;cx.fillStyle=p.c;cx.beginPath();cx.moveTo(0,s*.9);
+    cx.bezierCurveTo(-s,s*.2,-s*.8,-s*.9,-s*.15,-s*.8);cx.lineTo(0,-s*.5);cx.lineTo(s*.15,-s*.8);
+    cx.bezierCurveTo(s*.8,-s*.9,s,s*.2,0,s*.9);cx.fill();cx.restore();
   }
 }
 
-connect();
-setInterval(connect, 5000);
+function mkFlake(top){var r=1+R()*2.6;return{x:R()*W,y:top?-6:R()*H,r:r,vy:20+r*12+R()*10,ph:R()*6.28,pf:.5+R(),pa:6+R()*12,a:.45+R()*.5}}
+function initNoel(){P=[];var n=Math.max(26,Math.min(48,Math.round(W/9)));for(var i=0;i<n;i++)P.push(mkFlake(false))}
+function stepNoel(dt){
+  cx.clearRect(0,0,W,H);cx.fillStyle='#fff';
+  for(var i=0;i<P.length;i++){var p=P[i];
+    p.ph+=p.pf*dt;p.y+=p.vy*dt;p.x+=Math.cos(p.ph)*p.pa*dt;
+    if(p.y>H+6){P[i]=p=mkFlake(true)}
+    cx.globalAlpha=p.a;cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.2832);cx.fill();
+  }
+  cx.globalAlpha=1;
+}
+
+var CC=['0,229,255','255,43,214','178,75,255'];
+function mkStreak(top){var l=40+R()*110,col=CC[R()*3|0],g=cx.createLinearGradient(0,-l,0,0);
+  g.addColorStop(0,'rgba('+col+',0)');g.addColorStop(1,'rgba('+col+',.85)');
+  return{x:(R()*W)|0,y:top?-l-R()*H*.5:R()*H,l:l,v:110+R()*240,w:R()<.3?2:1,g:g}}
+function initCyber(){P=[];var n=Math.max(14,Math.min(24,Math.round(W/18)));for(var i=0;i<n;i++)P.push(mkStreak(false))}
+function stepCyber(dt){
+  cx.clearRect(0,0,W,H);
+  for(var i=0;i<P.length;i++){var p=P[i];p.y+=p.v*dt;
+    if(p.y-p.l>H){P[i]=p=mkStreak(true)}
+    cx.save();cx.translate(p.x,p.y);cx.fillStyle=p.g;cx.fillRect(0,-p.l,p.w,p.l);cx.restore();
+  }
+}
+
+var FS=16,CW=14;
+function initMatrix(){P=[];var n=Math.ceil(W/CW);
+  for(var i=0;i<n;i++)P.push({x:i*CW,y:-R()*40,v:6+R()*14,r:-1,ch:''});
+  cx.clearRect(0,0,W,H);cx.font='bold '+FS+'px monospace';cx.textBaseline='top'}
+function stepMatrix(dt){
+  cx.globalCompositeOperation='destination-out';cx.fillStyle='rgba(0,0,0,'+Math.min(.5,dt*3.2).toFixed(3)+')';cx.fillRect(0,0,W,H);
+  cx.globalCompositeOperation='source-over';
+  for(var i=0;i<P.length;i++){var d=P[i];d.y+=d.v*dt;var r=Math.floor(d.y);
+    if(r!==d.r){
+      if(d.r>=0&&d.ch){cx.clearRect(d.x,d.r*FS,CW,FS);cx.fillStyle='#00d94f';cx.fillText(d.ch,d.x,d.r*FS)}
+      d.r=r;
+      if(r>=0){d.ch=CH.charAt(R()*CH.length|0);cx.clearRect(d.x,r*FS,CW,FS);cx.fillStyle='#d8ffe3';cx.fillText(d.ch,d.x,r*FS)}else d.ch='';
+      if(r*FS>H){d.y=-R()*30;d.v=6+R()*14;d.r=-1;d.ch=''}
+    }
+  }
+}
+
+var INIT={sakura:initSakura,cyber:initCyber,matrix:initMatrix,noel:initNoel};
+var STEP={sakura:stepSakura,cyber:stepCyber,matrix:stepMatrix,noel:stepNoel};
+
+function ensure(){
+  if(cv)return !!cx;
+  try{cv=document.createElement('canvas');cv.id='themeFx';cv.setAttribute('aria-hidden','true');
+    document.body.insertBefore(cv,document.body.firstChild);cx=cv.getContext('2d')}catch(e){cx=null}
+  return !!cx;
+}
+function size(){var d=Math.min(window.devicePixelRatio||1,1.5);W=window.innerWidth;H=window.innerHeight;
+  cv.width=Math.round(W*d);cv.height=Math.round(H*d);cx.setTransform(d,0,0,d,0,0)}
+function stop(){if(raf){cancelAnimationFrame(raf);raf=0}}
+function frame(ts){
+  raf=requestAnimationFrame(frame);
+  if(!last){last=ts;return}
+  var dt=ts-last;if(dt<30)return;
+  last=ts;STEP[mode](Math.min(dt,100)/1000);
+}
+function still(){var n=mode==='matrix'?60:1;for(var i=0;i<n;i++)STEP[mode](mode==='matrix'?.05:0)}
+function run(){stop();if(!mode||document.hidden)return;if(reduced()){still();return}last=0;raf=requestAnimationFrame(frame)}
+function start(id){
+  stop();mode='';
+  if(!INIT[id]){if(cv)cv.style.display='none';return}
+  if(!ensure())return;
+  cv.style.display='';mode=id;size();INIT[id]();run();
+}
+
+function cards(){
+  if(!grid)return;
+  grid.innerHTML=T.map(function(t){return '<button class="tcard" type="button" role="radio" aria-checked="false" data-th="'+t[0]+'"><span class="tprev tp-'+t[0]+'"></span><b>'+t[1]+'</b></button>'}).join('');
+}
+function mark(id){
+  if(!grid)return;
+  [].forEach.call(grid.children,function(b){var on=b.getAttribute('data-th')===id;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false')});
+}
+function apply(id,save){
+  var t=T.filter(function(x){return x[0]===id})[0]||T[0];id=t[0];
+  if(id==='default')root.removeAttribute('data-theme');else root.setAttribute('data-theme',id);
+  if(meta)meta.setAttribute('content',t[2]);
+  if(save){try{localStorage.setItem(KEY,id)}catch(e){}}
+  mark(id);start(id);
+}
+
+if(grid)grid.addEventListener('click',function(e){var b=e.target.closest('[data-th]');if(b)apply(b.getAttribute('data-th'),true)});
+document.addEventListener('visibilitychange',function(){root.classList.toggle('nv-hid',document.hidden);if(document.hidden)stop();else run()});
+if(mq){var oc=function(){run()};if(mq.addEventListener)mq.addEventListener('change',oc);else if(mq.addListener)mq.addListener(oc)}
+addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){
+  if(!mode||!cv)return;
+  if(Math.abs(innerWidth-W)<2&&Math.abs(innerHeight-H)<80)return;
+  size();INIT[mode]();run();
+},250)});
+
+cards();apply(get(),false);
+})();
 </script>
 </body>
 </html>
-  
