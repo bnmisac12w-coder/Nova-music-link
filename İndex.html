@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA Music</title>
+<style>
+body {
+  background:#0c0d0f;
+  color:white;
+  font-family:Arial,sans-serif;
+  display:grid;
+  place-items:center;
+  min-height:90vh;
+  text-align:center;
+}
+p {color:#aaa}
+</style>
+</head>
+<body>
+<main>
+<h1>NOVA MUSIC</h1>
+<p id="status">Sunucu aranıyor...</p>
+</main>
+<script>
+const KEY = "sb_publishable_XPy0o9PDLBgukREOKQpG4A_AY3gJNs7";
+const API = "https://igcmeihdkxkczzgneioa.supabase.co/rest/v1/tunnel_status?select=url&id=eq.1";
+
+async function connect() {
+  try {
+    const r = await fetch(API, {
+      headers: { apikey: KEY },
+      cache: "no-store"
+    });
+
+    if (!r.ok) throw new Error("Bağlantı hatası");
+
+    const data = await r.json();
+    const url = data?.[0]?.url;
+
+    if (!url || !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(url))
+      throw new Error("Sunucu henüz hazır değil");
+
+    document.getElementById("status").textContent = "NOVA Music açılıyor...";
+    location.replace(url);
+
+  } catch (e) {
+    document.getElementById("status").textContent =
+      "Sunucu bekleniyor... 5 saniye sonra tekrar denenecek.";
+  }
+}
+
+connect();
+setInterval(connect, 5000);
+</script>
+</body>
+</html>
+  
