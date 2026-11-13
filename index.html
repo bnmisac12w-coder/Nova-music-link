@@ -205,7 +205,7 @@ html[data-theme=noel]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%
     <div class="cnt" id="cnt" style="display:none"></div>
     <div id="trend" style="display:none"></div><div class="hrow" id="hTrend"></div>
     <style>.hrow{display:flex;gap:12px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}.hc{flex:0 0 132px;min-width:0;cursor:pointer}.hc img{width:132px;height:132px;border-radius:14px;object-fit:cover;background:var(--panel);display:block}.hc b{display:block;margin-top:8px;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.hc small{display:block;margin-top:2px;color:var(--mut);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}</style>
-<div class="sec"><div><div class="eb">NOVA SELECTION</div><h2>Türkçe Trend</h2></div></div><div class="hrow" id="hTr"></div>
+
 <div class="sec"><div><div class="eb">SOUNDCLOUD</div><h2>SoundCloud Playlistleri</h2></div></div>
 <div class="hrow" id="hScPlaylists"><div class="empty">Playlistler yükleniyor…</div></div>
 <div class="sec"><div><div class="eb">NOVA MUSIC</div><h2>Son Eklenenler</h2></div></div><div class="hrow" id="hNew"></div>
@@ -604,7 +604,7 @@ function hrow(sel,name,emptyMsg){
   var a=(L[name]||[]).slice(0,10),el=$(sel);if(!el)return;
   el.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="'+name+'" data-hi="'+i+'"><img src="'+esc(t.art)+'" alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">'+emptyMsg+'</div>';
 }
-function homeRows(){L.recentAdd=(L.new||[]).filter(function(t){return t.createdAt&&Date.now()-t.createdAt<=5*24*60*60*1000});hrow('#hTrend','trend','Yükleniyor…');hrow('#hTr','tr','Yükleniyor…');hrow('#hNew','recentAdd','Son 5 günde eklediğin şarkı yok.')}
+function homeRows(){L.recentAdd=(L.new||[]).filter(function(t){return t.createdAt&&Date.now()-t.createdAt<=5*24*60*60*1000});hrow('#hTrend','trend','Yükleniyor…');hrow('#hNew','recentAdd','Son 5 günde eklediğin şarkı yok.')}
     window.refreshHomeRows=homeRows;
 var _r=render;render=function(){_r();homeRows()};
 document.addEventListener('click',function(e){
@@ -612,8 +612,7 @@ document.addEventListener('click',function(e){
   var n=c.dataset.hl,i=+c.dataset.hi;
   if(L[n]&&L[n][i])play(L[n].slice(0,10),i);
 });
-L.tr=[];
-fetch('/api/tr-list').then(function(r){return r.json()}).then(function(list){L.tr=list.map(function(x){return{id:x.id,name:x.name,artist:x.artist,art:x.art,url:'/api/yt?q='+encodeURIComponent(x.yt)}});homeRows()}).catch(function(){L.tr=[];homeRows()});
+
 homeRows();
 })();
 (function(){
