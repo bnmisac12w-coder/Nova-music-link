@@ -27,4 +27,4 @@ jobs:
           version: latest
 
       - name: Deploy SoundCloud resolver
-        run: supabase functions deploy sc-resolve --project-ref igcmeihdkxkczzgneioa
+        run: supabase functions deploy sc-resolve --project-ref igcmeihdkxkczzgneioa --yes
