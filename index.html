@@ -1023,7 +1023,7 @@ addEventListener('online',net);addEventListener('offline',net);net();
   async function addLink(){
     var raw=$('#ytIn').value.trim();
     var sm=raw.match(/https?:\/\/on\.soundcloud\.com\/[\w-]+/i);
-    if(sm){try{var rr=await fetch('/api/sc-resolve?u='+encodeURIComponent(sm[0]));if(!rr.ok)throw new Error('resolve failed');var sj=await rr.json();if(!sj.url||!/^https?:\/\/(www\.)?soundcloud\.com\//i.test(sj.url))throw new Error('invalid URL');raw=sj.url}catch(e){msg('SoundCloud kısa bağlantısı çözümlenemedi.');return;}}
+    if(sm){try{if(!window.novaDb)throw new Error('Supabase bağlantısı yok');var rr=await window.novaDb.functions.invoke('sc-resolve',{body:{url:sm[0]}});var sj=rr.data;if(rr.error||!sj||!sj.url||!/^https?:\/\/(www\.)?soundcloud\.com\//i.test(sj.url))throw new Error('resolve failed');raw=sj.url}catch(e){console.error('SoundCloud kısa bağlantısı çözümlenemedi:',e);msg('SoundCloud kısa bağlantısı çözümlenemedi.');return;}}
     raw=raw.replace(/(soundcloud\.com\/[^?\s]+)\?\S*/i,function(m,p){return p});
     var id=ytId(raw),url='',item=null;
     var b=$('#ytAdd');b.disabled=true;msg('Bağlantı kontrol ediliyor…');
