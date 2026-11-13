@@ -28,9 +28,12 @@ Deno.serve(async (req) => {
     });
 
     const resolved = new URL(response.url);
-    if (!response.ok ||
-        !/(^|\\.)soundcloud\\.com$/i.test(resolved.hostname) ||
-        !/^\\/[^/]+\\/sets\\/[^/?#]+/.test(resolved.pathname)) {
+    const host = resolved.hostname.toLowerCase();
+    const pathParts = resolved.pathname.split("/").filter(Boolean);
+    const isSoundCloudHost = host === "soundcloud.com" || host.endsWith(".soundcloud.com");
+    const isPlaylistPath = pathParts.length >= 3 && pathParts[1] === "sets" && pathParts[2].length > 0;
+
+    if (!response.ok || !isSoundCloudHost || !isPlaylistPath) {
       return Response.json({ error: "Bağlantı bir SoundCloud playlist adresine yönlenmedi." }, { status: 422, headers: corsHeaders });
     }
 
