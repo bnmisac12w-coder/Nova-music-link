@@ -22,9 +22,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
-          version: latest
+          version: 3.0.0
 
       - name: Deploy SoundCloud resolver
         run: supabase functions deploy sc-resolve --project-ref igcmeihdkxkczzgneioa --yes
