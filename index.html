@@ -639,7 +639,7 @@ bar.onclick=async function(e){
 $('#backAbout').onclick=()=>{$('#v-settings').classList.remove('on');$('#v-about').classList.add('on');scrollTo(0,0)};
 addEventListener('scroll',()=>{const o=Math.max(0,1-scrollY/160);$('#hero').style.opacity=o;$('#hero').style.pointerEvents=o?'':'none'},{passive:true});
 
-function net(){const s=$('#st');const on=navigator.onLine;s.classList.toggle('off',!on);s.innerHTML='<i></i>'+(on?'ONLINE':'OFFLINE')}
+function net(){const s=$('#st');if(s==null)return;const on=navigator.onLine;s.classList.toggle('off',!on);s.innerHTML='<i></i>'+(on?'ONLINE':'OFFLINE')}
 addEventListener('online',net);addEventListener('offline',net);net();
 
 (()=>{const n=$('#notes'),c=['♪','♫','♩','♬'];
