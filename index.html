@@ -246,7 +246,7 @@ html[data-theme=noel]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%
     <p id="accountStatus" style="color:var(--mut);margin-top:10px">Henüz giriş yapmadın.</p>
     <button class="btn" id="switchGoogleAccount" style="display:none;margin-top:10px">Hesap değiştir</button>
   </div>
-  <div class="card"><h3>NOVA Music</h3>Şarkı ara, trend listeyi dinle, favorilerini sakla.</div><div class="card" id="novaLists" style="margin-top:20px"></div><div class="card" id="novaFavs" style="margin-top:20px"></div>
+  <div class="card"><h3>NOVA Music</h3>Şarkı ara, listelerini oluştur ve favori şarkılarını sakla.</div><div class="card" id="novaLists" style="margin-top:20px"></div><div class="card" id="novaFavs" style="margin-top:20px"></div><div class="card" id="novaScFavs" style="margin-top:20px"></div>
 </section>
 <section class="view" id="v-profile-edit">
   <div style="display:flex;align-items:center;gap:14px;margin-top:34px">
@@ -519,6 +519,7 @@ function renderAbout(){
   fb.appendChild(el('div','font-weight:700;font-size:16px;margin-bottom:10px','Favoriler ('+fav.length+')'));
   if(!fav.length)fb.appendChild(el('div','opacity:.6;font-size:13px','Henüz favori yok.'));
   fav.forEach(function(t,i){fb.appendChild(trackRow(fav,i))});
+   if(window.novaRenderScPlaylistFavs)window.novaRenderScPlaylistFavs();
 }
 window.novaRenderAbout=renderAbout;
 var nb=document.querySelector('button[data-v="about"]');
@@ -1620,8 +1621,19 @@ if ('serviceWorker' in navigator) {
   if(!row)return;
 
   var items=[];
+  var FKEY='nova_sc_playlist_favs';
+  function getFavs(){try{return JSON.parse(localStorage.getItem(FKEY))||[]}catch(e){return[]}}
+  function isFav(x){return getFavs().some(function(y){return y.url===x.url})}
+  function saveFavs(a){try{localStorage.setItem(FKEY,JSON.stringify(a))}catch(e){}}
   var style=document.createElement('style');
   style.textContent=`
+    #hScPlaylists .hc{position:relative}
+    #hScPlaylists .sc-fav{position:absolute;right:7px;top:7px;width:34px;height:34px;border:0;border-radius:50%;background:rgba(0,0,0,.72);color:#fff;font-size:19px;z-index:2}
+    #hScPlaylists .sc-fav.on{color:#ff668c}
+    #novaScFavs .scfav-row{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+    #novaScFavs .scfav-play{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:left;padding:8px;border:0;border-radius:10px;background:rgba(255,255,255,.06);color:inherit}
+    #novaScFavs .scfav-play img{width:42px;height:42px;border-radius:8px;object-fit:cover}
+    #novaScFavs .scfav-remove{padding:10px;border:0;border-radius:9px;background:rgba(255,80,80,.16);color:inherit}
     #scPlaylistPlayer{margin-top:20px}
     #scPlaylistPlayer iframe{width:100%;height:430px;border:0;border-radius:14px;background:var(--panel)}
     #scPlaylistPlayer .scpp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
@@ -1659,10 +1671,35 @@ if ('serviceWorker' in navigator) {
         '<img src="'+esc(x.artwork)+'" alt="" loading="lazy">'+
         '<b>'+esc(x.title)+'</b>'+
         '<small>'+esc(x.author||'SoundCloud')+'</small>'+
+        '<button class="sc-fav '+(isFav(x)?'on':'')+'" data-scfav="'+i+'" aria-label="Favorilere ekle">'+(isFav(x)?'♥':'♡')+'</button>'+
       '</div>';
     }).join('');
   }
 
+  function openItem(item){
+    if(!item)return;
+    document.getElementById('scppTitle').textContent=item.title;
+    document.getElementById('scppAuthor').textContent=item.author||'SoundCloud';
+    document.getElementById('scppFrame').src='https://w.soundcloud.com/player/?url='+encodeURIComponent(item.url)+'&auto_play=true&hide_related=true&show_comments=false&show_user=true&visual=true&show_artwork=true';
+    player.hidden=false;player.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  function renderFavs(){
+    var box=document.getElementById('novaScFavs');if(!box)return;
+    var fav=getFavs();box.innerHTML='';
+    var h=document.createElement('div');h.style.cssText='font-weight:700;font-size:16px;margin-bottom:10px';h.textContent='Favori Playlistler ('+fav.length+')';box.appendChild(h);
+    if(!fav.length){var e=document.createElement('div');e.style.cssText='opacity:.6;font-size:13px';e.textContent='Henüz favori playlist yok. SoundCloud playlistlerindeki kalp simgesine dokun.';box.appendChild(e);return;}
+    fav.forEach(function(x){
+      var line=document.createElement('div');line.className='scfav-row';
+      var b=document.createElement('button');b.className='scfav-play';
+      var im=document.createElement('img');im.src=x.artwork||'';im.alt='';
+      var tx=document.createElement('span');tx.style.cssText='min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';tx.textContent=x.title||'SoundCloud Playlist';
+      b.appendChild(im);b.appendChild(tx);b.onclick=function(){openItem(x)};
+      var rm=document.createElement('button');rm.className='scfav-remove';rm.textContent='♥';rm.setAttribute('aria-label','Favorilerden çıkar');
+      rm.onclick=function(){var a=getFavs().filter(function(y){return y.url!==x.url});saveFavs(a);render();renderFavs()};
+      line.appendChild(b);line.appendChild(rm);box.appendChild(line);
+    });
+  }
+  window.novaRenderScPlaylistFavs=renderFavs;
   async function load(){
     if(!window.novaDb){
       row.innerHTML='<div class="empty">Supabase bağlantısı bekleniyor.</div>';
@@ -1687,22 +1724,10 @@ if ('serviceWorker' in navigator) {
   window.loadScPlaylists=load;
 
   row.addEventListener('click',function(e){
-    var card=e.target.closest('[data-scp]');
-    if(!card)return;
-
-    var item=items[Number(card.dataset.scp)];
-    if(!item)return;
-
-    document.getElementById('scppTitle').textContent=item.title;
-    document.getElementById('scppAuthor').textContent=item.author||'SoundCloud';
-
-    document.getElementById('scppFrame').src=
-      'https://w.soundcloud.com/player/?url='+
-      encodeURIComponent(item.url)+
-      '&auto_play=true&hide_related=true&show_comments=false&show_user=true&visual=true&show_artwork=true';
-
-    player.hidden=false;
-    player.scrollIntoView({behavior:'smooth',block:'nearest'});
+    var heart=e.target.closest('[data-scfav]');
+    if(heart){e.stopPropagation();var x=items[Number(heart.dataset.scfav)];if(!x)return;var a=getFavs();if(a.some(function(y){return y.url===x.url}))a=a.filter(function(y){return y.url!==x.url});else a.unshift(x);saveFavs(a);render();renderFavs();return;}
+    var card=e.target.closest('[data-scp]');if(!card)return;
+    openItem(items[Number(card.dataset.scp)]);
   });
 
   document.getElementById('scppClose').addEventListener('click',function(){
@@ -1710,7 +1735,7 @@ if ('serviceWorker' in navigator) {
     player.hidden=true;
   });
 
-  load();
+  load();renderFavs();
 })();
 </script>
 
