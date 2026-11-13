@@ -1,4 +1,4 @@
-// Supabase Edge Function: resolve SoundCloud playlist short links.
+// Supabase Edge Function: resolve SoundCloud short links for tracks and playlists.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -30,16 +30,35 @@ Deno.serve(async (req) => {
     const resolved = new URL(response.url);
     const host = resolved.hostname.toLowerCase();
     const pathParts = resolved.pathname.split("/").filter(Boolean);
-    const isSoundCloudHost = host === "soundcloud.com" || host.endsWith(".soundcloud.com");
-    const isPlaylistPath = pathParts.length >= 3 && pathParts[1] === "sets" && pathParts[2].length > 0;
+    const isSoundCloudHost = host === "soundcloud.com" || host === "www.soundcloud.com";
+    const isPlaylistPath =
+      pathParts.length >= 3 &&
+      pathParts[1] === "sets" &&
+      pathParts[2].length > 0;
+    const reservedRoutes = new Set([
+      "discover", "search", "you", "stream", "charts", "stations",
+      "tags", "pages", "settings", "upload", "pro", "jobs",
+    ]);
+    const isTrackPath =
+      pathParts.length >= 2 &&
+      pathParts[0].length > 0 &&
+      pathParts[1].length > 0 &&
+      pathParts[1] !== "sets" &&
+      !reservedRoutes.has(pathParts[0].toLowerCase());
 
-    if (!response.ok || !isSoundCloudHost || !isPlaylistPath) {
-      return Response.json({ error: "Bağlantı bir SoundCloud playlist adresine yönlenmedi." }, { status: 422, headers: corsHeaders });
+    if (!response.ok || !isSoundCloudHost || (!isPlaylistPath && !isTrackPath)) {
+      return Response.json(
+        { error: "Bağlantı bir SoundCloud parçasına veya playlistine yönlenmedi." },
+        { status: 422, headers: corsHeaders },
+      );
     }
 
     resolved.search = "";
     resolved.hash = "";
-    return Response.json({ url: resolved.href }, { headers: corsHeaders });
+    return Response.json({
+      url: resolved.href,
+      type: isPlaylistPath ? "playlist" : "track",
+    }, { headers: corsHeaders });
   } catch (_error) {
     return Response.json({ error: "SoundCloud kısa bağlantısı çözümlenemedi." }, { status: 400, headers: corsHeaders });
   }
