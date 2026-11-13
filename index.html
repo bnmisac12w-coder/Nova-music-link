@@ -383,7 +383,7 @@ function loadFavs(){try{return JSON.parse(localStorage.getItem('nova_favs'))||[]
 function saveFavs(){try{localStorage.setItem('nova_favs',JSON.stringify(L.fav))}catch(e){}}
 const isFav=id=>L.fav.some(t=>t.id===id);
 
-const norm=r=>({id:r.id,name:r.title,artist:r.user&&r.user.name||'',art:r.artwork&&(r.artwork['480x480']||r.artwork['150x150'])||'',url:API+'/tracks/'+r.id+'/stream?app_name=NOVA'});
+const norm=r=>({id:r.id,name:r.title,artist:r.user&&r.user.name||'',art:r.artwork&&(r.artwork['480x480']||r.artwork['150x150'])||'',duration:Number(r.duration)||0,url:API+'/tracks/'+r.id+'/stream?app_name=NOVA'});
 const clean=a=>(a||[]).filter(r=>r&&r.id&&r.is_streamable!==false).map(norm);
 async function getJSON(u){const r=await fetch(u);if(!r.ok)throw 0;return r.json()}
 const trending=async()=>clean((await getJSON(API+'/tracks/trending?time=week&limit=25&app_name=NOVA')).data).filter(t=>!t.name.toLowerCase().includes('140 mix'));
@@ -412,7 +412,7 @@ function toggleFav(id){
 
 function play(list,i){
   queue=list.slice();idx=i;const t=queue[i];
-  audio.src=t.url;audio.play().catch(()=>{});if(t.url.indexOf('/api/yt')===0){/*nova-bekle*/var g=document.getElementById('novaToast');if(!g){g=document.createElement('div');g.id='novaToast';g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:99999;opacity:0;transition:opacity 1s ease;pointer-events:none';document.body.appendChild(g)}g.textContent='⏳ Geç açılabilir, bekle…';g.style.display='block';clearTimeout(window.__toastT);g.style.opacity='0';void g.offsetWidth;g.style.opacity='1';window.__toastT=setTimeout(function(){g.style.opacity='0'},2000)}
+  audio.pause();audio.src=t.url;$('#tC').textContent='0:00';$('#tD').textContent=fmt(t.duration);$('#seek').value=0;$('#seek').style.setProperty('--p','0%');audio.load();audio.play().catch(()=>{});if(t.url.indexOf('/api/yt')===0){/*nova-bekle*/var g=document.getElementById('novaToast');if(!g){g=document.createElement('div');g.id='novaToast';g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:99999;opacity:0;transition:opacity 1s ease;pointer-events:none';document.body.appendChild(g)}g.textContent='⏳ Geç açılabilir, bekle…';g.style.display='block';clearTimeout(window.__toastT);g.style.opacity='0';void g.offsetWidth;g.style.opacity='1';window.__toastT=setTimeout(function(){g.style.opacity='0'},2000)}
   $('#pArt').src=t.art;$('#pTitle').textContent=t.name;$('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
   $('#player').classList.add('show');requestAnimationFrame(marquee);render();
 }
@@ -422,12 +422,13 @@ function marquee(){
   const over=s.scrollWidth-m.clientWidth;
   if(over>2){m.style.setProperty('--s',-(over+8)+'px');m.style.setProperty('--d',Math.max(4,over/25)+'s');m.classList.add('go')}
 }
-const fmt=s=>isFinite(s)&&s>0?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
-audio.addEventListener('timeupdate',()=>{
-  const p=audio.duration?audio.currentTime/audio.duration*1000:0;
-  $('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');$('#tC').textContent=fmt(audio.currentTime);
-});
-audio.addEventListener('loadedmetadata',()=>$('#tD').textContent=fmt(audio.duration));
+const fmt=s=>Number.isFinite(Number(s))&&Number(s)>0?Math.floor(Number(s)/60)+':'+String(Math.floor(Number(s)%60)).padStart(2,'0'):'0:00';
+function trackDuration(){const d=Number(audio.duration);return Number.isFinite(d)&&d>0?d:Number(cur()&&cur().duration)||0}
+function updateProgress(){const d=trackDuration(),now=Number(audio.currentTime)||0,p=d>0?Math.min(1000,now/d*1000):0;$('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');$('#tC').textContent=fmt(now);$('#tD').textContent=fmt(d)}
+audio.addEventListener('timeupdate',updateProgress);
+audio.addEventListener('loadedmetadata',updateProgress);
+audio.addEventListener('durationchange',updateProgress);
+audio.addEventListener('playing',updateProgress);
 audio.addEventListener('play',()=>{$('#pPlay').innerHTML=PAUSE;render()});
 audio.addEventListener('pause',()=>{$('#pPlay').innerHTML=PLAY;render()});
 audio.addEventListener('ended',()=>step(1));
@@ -444,7 +445,7 @@ function save(a){try{localStorage.setItem(K,JSON.stringify(a))}catch(e){}}
 var b=$('#pAdd');
 b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12M4 11h12M4 16h7M18 13v6M15 16h6"/></svg>';
 function msg(t){var g=document.createElement('div');g.textContent=t;g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:100001;opacity:0;transition:opacity .5s';document.body.appendChild(g);void g.offsetWidth;g.style.opacity='1';setTimeout(function(){g.style.opacity='0';setTimeout(function(){g.remove()},500)},2000)}
-function addTo(i,t){var a=load();if(a[i].tracks.some(function(x){return x.id===t.id})){msg('Zaten bu listede')}else{a[i].tracks.push({id:t.id,name:t.name,artist:t.artist,art:t.art,url:t.url});save(a);msg('"'+a[i].name+'" listesine eklendi')}}
+function addTo(i,t){var a=load();if(a[i].tracks.some(function(x){return x.id===t.id})){msg('Zaten bu listede')}else{a[i].tracks.push({id:t.id,name:t.name,artist:t.artist,art:t.art,duration:t.duration||0,url:t.url});save(a);msg('"'+a[i].name+'" listesine eklendi')}}
 function close(){var o=document.getElementById('novaPL');if(o)o.remove()}
 function open(){
 var t=cur();if(!t)return;close();
@@ -526,7 +527,7 @@ var nb=document.querySelector('button[data-v="about"]');
 if(nb)nb.addEventListener('click',function(){setTimeout(renderAbout,0)});
 renderAbout();
 })();
-$('#seek').oninput=e=>{if(audio.duration)audio.currentTime=e.target.value/1000*audio.duration};
+$('#seek').oninput=e=>{const d=trackDuration();if(d>0){audio.currentTime=e.target.value/1000*d;$('#seek').style.setProperty('--p',e.target.value/10+'%')}};
 
 document.addEventListener('click',e=>{
   const h=e.target.closest('[data-h]');
