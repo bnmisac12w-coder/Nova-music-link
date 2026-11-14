@@ -387,7 +387,23 @@ const norm=r=>({id:r.id,name:r.title,artist:r.user&&r.user.name||'',art:r.artwor
 const clean=a=>(a||[]).filter(r=>r&&r.id&&r.is_streamable!==false).map(norm);
 async function getJSON(u){const r=await fetch(u);if(!r.ok)throw 0;return r.json()}
 const trending=async()=>clean((await getJSON(API+'/tracks/trending?time=week&limit=25&app_name=NOVA')).data).filter(t=>!t.name.toLowerCase().includes('140 mix'));
-const search=async q=>clean((await getJSON(API+'/tracks/search?limit=25&app_name=NOVA&query='+encodeURIComponent(q))).data);
+const search=async q=>{
+  const term=String(q||'').toLocaleLowerCase('tr-TR');
+  const matches=t=>
+    String(t.name||'').toLocaleLowerCase('tr-TR').includes(term) ||
+    String(t.artist||'').toLocaleLowerCase('tr-TR').includes(term);
+  const local=[...(L.add||[]),...(L.new||[])].filter(matches);
+  let remote=[];
+  try{
+    remote=clean((await getJSON(API+'/tracks/search?limit=25&app_name=NOVA&query='+encodeURIComponent(q))).data);
+  }catch(e){}
+  const seen=new Set();
+  return local.concat(remote).filter(t=>{
+    if(!t||!t.id||seen.has(t.id))return false;
+    seen.add(t.id);
+    return true;
+  });
+};
 
 const cur=()=>queue[idx];
 function rows(name){
