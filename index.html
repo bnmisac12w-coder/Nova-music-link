@@ -429,7 +429,7 @@ function toggleFav(id){
 function play(list,i){
   queue=list.slice();idx=i;const t=queue[i];
   audio.pause();audio.src=t.url;$('#tC').textContent='0:00';$('#tD').textContent=fmt(t.duration);$('#seek').value=0;$('#seek').style.setProperty('--p','0%');audio.load();audio.play().catch(()=>{});if(t.url.indexOf('/api/yt')===0){/*nova-bekle*/var g=document.getElementById('novaToast');if(!g){g=document.createElement('div');g.id='novaToast';g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:99999;opacity:0;transition:opacity 1s ease;pointer-events:none';document.body.appendChild(g)}g.textContent='⏳ Geç açılabilir, bekle…';g.style.display='block';clearTimeout(window.__toastT);g.style.opacity='0';void g.offsetWidth;g.style.opacity='1';window.__toastT=setTimeout(function(){g.style.opacity='0'},2000)}
-  $('#pArt').src=t.art;$('#pTitle').textContent=t.name;$('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';
+  $('#pArt').src=t.art;$('#pTitle').textContent=t.name;$('#pArtist').textContent=t.artist?'@'+t.artist.replace(/^@/,''):'';novaMedia(t,'playing',0,Number(t.duration)||0);
   $('#player').classList.add('show');requestAnimationFrame(marquee);render();
 }
 function step(d){if(queue.length)play(queue,(idx+d+queue.length)%queue.length)}
@@ -452,14 +452,31 @@ function novaMedia(t,state,position,duration){
     }
   }catch(e){}
 }
+function setupMediaActions(){
+  try{
+    var ms=navigator.mediaSession;if(!ms)return;
+    ms.setActionHandler('play',function(){audio.play().catch(function(){});});
+    ms.setActionHandler('pause',function(){audio.pause();});
+    ms.setActionHandler('previoustrack',function(){step(-1);});
+    ms.setActionHandler('nexttrack',function(){step(1);});
+    ms.setActionHandler('seekbackward',function(d){audio.currentTime=Math.max(0,audio.currentTime-((d&&d.seekOffset)||10));});
+    ms.setActionHandler('seekforward',function(d){audio.currentTime=Math.min(trackDuration(),audio.currentTime+((d&&d.seekOffset)||10));});
+    ms.setActionHandler('seekto',function(d){if(d&&Number.isFinite(d.seekTime))audio.currentTime=Math.max(0,Math.min(trackDuration(),d.seekTime));});
+  }catch(e){}
+}
 function trackDuration(){const d=Number(audio.duration);return Number.isFinite(d)&&d>0?d:Number(cur()&&cur().duration)||0}
-function updateProgress(){const d=trackDuration(),now=Number(audio.currentTime)||0,p=d>0?Math.min(1000,now/d*1000):0;$('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');$('#tC').textContent=fmt(now);$('#tD').textContent=fmt(d)}
+function updateProgress(){
+  const d=trackDuration(),now=Number(audio.currentTime)||0,p=d>0?Math.min(1000,now/d*1000):0;
+  $('#seek').value=p;$('#seek').style.setProperty('--p',p/10+'%');$('#tC').textContent=fmt(now);$('#tD').textContent=fmt(d);
+  novaMedia(cur(),'playing',now,d);
+}
+setupMediaActions();
 audio.addEventListener('timeupdate',updateProgress);
 audio.addEventListener('loadedmetadata',updateProgress);
 audio.addEventListener('durationchange',updateProgress);
-audio.addEventListener('playing',updateProgress);
-audio.addEventListener('play',()=>{$('#pPlay').innerHTML=PAUSE;render()});
-audio.addEventListener('pause',()=>{$('#pPlay').innerHTML=PLAY;render()});
+audio.addEventListener('playing',function(){updateProgress();novaMedia(cur(),'playing',audio.currentTime,trackDuration());});
+audio.addEventListener('play',function(){$('#pPlay').innerHTML=PAUSE;render();novaMedia(cur(),'playing',audio.currentTime,trackDuration());});
+audio.addEventListener('pause',function(){$('#pPlay').innerHTML=PLAY;render();novaMedia(cur(),'paused',audio.currentTime,trackDuration());});
 audio.addEventListener('ended',()=>step(1));
 audio.addEventListener('error',()=>{alert('Bu link çalınamıyor. Doğrudan ses linki (.mp3, .m4a) gerekli, SoundCloud sayfa linkleri çalmaz.');if(queue.length>1)setTimeout(()=>step(1),800)});
 $('#pPlay').innerHTML=PLAY;
