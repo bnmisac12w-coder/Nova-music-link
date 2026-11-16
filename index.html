@@ -1938,47 +1938,5 @@ cards();apply(get(),false);
 })();
 </script>
 
-<script id="nova-first-notification-permission">
-(function(){
-  'use strict';
-  var KEY='nova_notification_permission_prompted';
-  function showPrompt(){
-    try{
-      if(localStorage.getItem(KEY))return;
-      if(!('Notification' in window))return;
-      if(Notification.permission==='granted'||Notification.permission==='denied'){
-        localStorage.setItem(KEY,'1');return;
-      }
-    }catch(e){return;}
-    var overlay=document.createElement('div');
-    overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:22px;';
-    var panel=document.createElement('div');
-    panel.style.cssText='width:100%;max-width:360px;background:#17191c;color:#fff;border:1px solid #30343a;border-radius:20px;padding:22px;font-family:system-ui,sans-serif;text-align:center;';
-    var title=document.createElement('h2');title.textContent='Bildirim izni';
-    title.style.cssText='font-size:22px;margin:0 0 10px;';
-    var desc=document.createElement('p');desc.textContent='NOVA Music bildirimlerini etkinleştirmek için izin ver.';
-    desc.style.cssText='color:#b7bdc5;font-size:14px;line-height:1.5;margin:0 0 18px;';
-    var allow=document.createElement('button');allow.textContent='İzin ver';
-    allow.style.cssText='width:100%;padding:13px;border:0;border-radius:12px;background:#1ed760;color:#06140b;font-weight:700;font-size:16px;';
-    var later=document.createElement('button');later.textContent='Şimdi değil';
-    later.style.cssText='width:100%;padding:12px;border:0;background:transparent;color:#b7bdc5;font-size:14px;margin-top:6px;';
-    allow.onclick=async function(){
-      allow.disabled=true;
-      try{
-        var result=await Notification.requestPermission();
-        localStorage.setItem(KEY,'1');
-        desc.textContent=result==='granted'?'Bildirim izni verildi.':'Bildirim izni verilmedi. İstersen Android uygulama ayarlarından açabilirsin.';
-        allow.textContent='Tamam';allow.onclick=function(){overlay.remove()};
-        later.style.display='none';
-      }catch(e){allow.disabled=false;desc.textContent='Bildirim izni şu anda istenemiyor.';}
-    };
-    later.onclick=function(){try{localStorage.setItem(KEY,'1')}catch(e){}overlay.remove()};
-    panel.append(title,desc,allow,later);overlay.appendChild(panel);document.body.appendChild(overlay);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showPrompt,{once:true});
-  else showPrompt();
-})();
-</script>
-
 </body>
 </html>
