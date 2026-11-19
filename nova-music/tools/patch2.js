@@ -1,0 +1,10 @@
+const fs=require('fs');
+const f='public/index.html';
+let h=fs.readFileSync(f,'utf8');
+fs.writeFileSync(f+'.bak3',h);
+const gear='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+h=h.replace(/(<button data-v="about">)<svg[\s\S]*?<\/svg>Hakkımda(<\/button>)/,(m,a,b)=>a+gear+'Ayarlar'+b);
+h=h.replace('>Hakkımda</h2>','>Ayarlar</h2>');
+h=h.replace('<div class="eb" style="margin-top:34px">AYARLAR</div>','<div class="eb" style="margin-top:34px">NOVA MUSIC</div>');
+fs.writeFileSync(f,h);
+console.log(h.includes('Hakkımda')?'Hâlâ Hakkımda geçen yer var':'Tamam');

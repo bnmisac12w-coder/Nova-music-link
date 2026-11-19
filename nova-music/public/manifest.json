@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "NOVA Music",
+  "short_name": "NOVA",
+  "description": "NOVA Music müzik çalar",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0c0d0f",
+  "theme_color": "#0c0d0f",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
