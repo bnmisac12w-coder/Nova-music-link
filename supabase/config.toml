@@ -1,0 +1,2 @@
+[functions.sc-resolve]
+verify_jwt = false
