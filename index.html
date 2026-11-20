@@ -545,6 +545,45 @@ function trackRow(list,i){
   r.onclick=function(){play(list,i)};
   return r;
 }
+function openPlaylistDetail(index){
+  var lists=load(),p=lists[index];if(!p)return;
+  var main=document.querySelector('main');if(!main)return;
+  var detail=document.getElementById('v-playlist-detail');
+  if(!detail){
+    detail=document.createElement('section');detail.id='v-playlist-detail';detail.className='view';
+    main.appendChild(detail);
+  }
+  var tracks=p.tracks||[],total=tracks.reduce(function(sum,t){return sum+(Number(t.duration)||0)},0);
+  function time(n){n=Math.floor(Number(n)||0);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
+  detail.innerHTML='';
+  var back=el('button','display:flex;align-items:center;gap:9px;padding:12px 0;color:var(--g);font-size:15px;font-weight:600','← Geri');
+  back.onclick=function(){detail.classList.remove('on');document.getElementById('v-home').classList.add('on');scrollTo({top:0,behavior:'smooth'})};
+  detail.appendChild(back);
+  var hero=el('div','display:flex;align-items:center;gap:16px;margin:20px 0 22px');
+  var cover=el('div','width:116px;height:116px;flex:none;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,rgba(30,215,96,.28),rgba(108,92,231,.32));display:grid;place-items:center');
+  if(tracks[0]&&tracks[0].art){var image=el('img','width:100%;height:100%;object-fit:cover');image.src=tracks[0].art;cover.appendChild(image)}
+  else cover.appendChild(el('b','font-size:48px;color:var(--g)','♫'));
+  var info=el('div','min-width:0;flex:1');
+  info.appendChild(el('div','font-size:11px;letter-spacing:.16em;color:var(--g);font-weight:700','NOVA MUSIC • LİSTEN'));
+  info.appendChild(el('h1','font-size:clamp(25px,7vw,34px);line-height:1.15;margin-top:8px;overflow-wrap:anywhere',p.name||'İsimsiz liste'));
+  info.appendChild(el('div','color:var(--mut);font-size:13px;margin-top:9px',tracks.length+' şarkı • '+time(total)+' toplam süre'));
+  hero.appendChild(cover);hero.appendChild(info);detail.appendChild(hero);
+  detail.appendChild(el('div','padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--panel);color:var(--mut);font-size:14px;line-height:1.55','Bu listeye eklediğin şarkılar burada. Şarkı seçerek tek tek çalabilir veya tüm listeyi başlatabilirsin.'));
+  var actions=el('div','display:flex;gap:10px;margin:16px 0 22px');
+  var all=el('button','flex:1;padding:14px;border-radius:13px;background:var(--g);color:#06140b;font-weight:700','▶  Tümünü çal');
+  all.disabled=!tracks.length;all.style.opacity=tracks.length?1:.5;all.onclick=function(){if(tracks.length)play(tracks,0)};
+  actions.appendChild(all);detail.appendChild(actions);
+  detail.appendChild(el('div','font-size:20px;font-weight:700;margin-bottom:12px','Şarkılar'));
+  if(!tracks.length)detail.appendChild(el('div','empty','Bu liste henüz boş.'));
+  tracks.forEach(function(t,j){
+    var line=trackRow(tracks,j);line.style.marginBottom='7px';detail.appendChild(line);
+  });
+  document.querySelectorAll('main>.view').forEach(function(v){v.classList.remove('on')});
+  detail.classList.add('on');
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.v==='home')});
+  scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){var d=document.getElementById('v-playlist-detail');if(d)d.classList.remove('on')})});
 function renderAbout(){
   var lb=document.getElementById('novaLists'),fb=document.getElementById('novaFavs');
   if(!lb||!fb)return;
@@ -574,12 +613,7 @@ function renderAbout(){
         card.appendChild(cover);
         card.appendChild(el('b','display:block;margin-top:7px;font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis',p.name||'İsimsiz liste'));
         card.appendChild(el('small','display:block;margin-top:3px;color:var(--mut);font-size:11px',String((p.tracks||[]).length)+' şarkı'));
-        card.onclick=function(){
-          openI=i;
-          var aboutNav=document.querySelector('button[data-v="about"]');
-          if(aboutNav)aboutNav.click();
-          renderAbout();
-        };
+        card.onclick=function(){openPlaylistDetail(i)};
         homeLists.appendChild(card);
       });
     }
