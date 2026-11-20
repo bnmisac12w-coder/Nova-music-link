@@ -491,7 +491,7 @@ function save(a){try{localStorage.setItem(K,JSON.stringify(a))}catch(e){}}
 var b=$('#pAdd');
 b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h12M4 11h12M4 16h7M18 13v6M15 16h6"/></svg>';
 function msg(t){var g=document.createElement('div');g.textContent=t;g.style.cssText='position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:100001;opacity:0;transition:opacity .5s';document.body.appendChild(g);void g.offsetWidth;g.style.opacity='1';setTimeout(function(){g.style.opacity='0';setTimeout(function(){g.remove()},500)},2000)}
-function addTo(i,t){var a=load();if(a[i].tracks.some(function(x){return x.id===t.id})){msg('Zaten bu listede')}else{a[i].tracks.push({id:t.id,name:t.name,artist:t.artist,art:t.art,duration:t.duration||0,url:t.url});save(a);msg('"'+a[i].name+'" listesine eklendi')}}
+function addTo(i,t){var a=load();if(a[i].tracks.some(function(x){return x.id===t.id})){msg('Zaten bu listede')}else{a[i].tracks.push({id:t.id,name:t.name,artist:t.artist,art:t.art,duration:t.duration||0,url:t.url||'',yt:t.yt||'',sc:!!t.sc,track:t.track||''});save(a);msg('"'+a[i].name+'" listesine eklendi')}}
 function close(){var o=document.getElementById('novaPL');if(o)o.remove()}
 function open(){
 var t=cur();if(!t)return;close();
@@ -531,6 +531,10 @@ window.novaAsk=function(title,def,cb){
 };
 function trackRow(list,i){
   var t=list[i];
+  /*nova-playlist-playback-fix*/
+  if(t&&!t.yt&&/^yt_[A-Za-z0-9_-]{11}$/.test(String(t.id||'')))t.yt=String(t.id).slice(3);
+  if(t&&!t.sc&&/^sc_/.test(String(t.id||'')))t.sc=true;
+  if(t&&!t.sc&&/soundcloud\.com\//i.test(String(t.url||'')))t.sc=true;
   var r=el('button','display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px;margin-bottom:6px;border:0;border-radius:10px;background:rgba(255,255,255,.06);color:inherit;font-size:14px');
   var im=el('img','width:40px;height:40px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.1)');
   if(t.art)im.src=t.art;
