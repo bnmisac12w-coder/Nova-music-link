@@ -562,7 +562,10 @@ function openPlaylistDetail(index){
   var hero=el('div','display:flex;align-items:center;gap:16px;margin:20px 0 22px');
   var cover=el('div','width:116px;height:116px;flex:none;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,rgba(30,215,96,.28),rgba(108,92,231,.32));display:grid;place-items:center');
   if(tracks[0]&&tracks[0].art){var image=el('img','width:100%;height:100%;object-fit:cover');image.src=tracks[0].art;cover.appendChild(image)}
-  else cover.appendChild(el('b','font-size:48px;color:var(--g)','♫'));
+  else cover.appendChild(el('b','font-size:48px;color:#fff','♫'));
+  cover.style.position='relative';cover.style.boxShadow='0 10px 28px rgba(99,102,241,.28)';
+  cover.appendChild(el('div','position:absolute;inset:0;background:linear-gradient(155deg,rgba(45,212,191,.12),rgba(99,102,241,.18) 40%,rgba(12,10,30,.94))'));
+  cover.appendChild(el('b','position:absolute;left:9px;right:9px;bottom:10px;color:#fff;font-size:13px;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,.8);overflow-wrap:anywhere',p.name||'İsimsiz liste'));
   var info=el('div','min-width:0;flex:1');
   info.appendChild(el('div','font-size:11px;letter-spacing:.16em;color:var(--g);font-weight:700','NOVA MUSIC • LİSTEN'));
   info.appendChild(el('h1','font-size:clamp(25px,7vw,34px);line-height:1.15;margin-top:8px;overflow-wrap:anywhere',p.name||'İsimsiz liste'));
@@ -608,10 +611,14 @@ function renderAbout(){
           var mark=el('div','font-size:34px;font-weight:800;color:var(--g)','♫');
           cover.appendChild(mark);
         }
-        var count=el('span','position:absolute;right:6px;top:6px;padding:3px 7px;border-radius:20px;background:rgba(0,0,0,.68);color:#fff;font-size:10px;font-weight:600',String((p.tracks||[]).length));
+        cover.style.boxShadow='0 7px 22px rgba(103,75,220,.22),inset 0 0 0 1px rgba(255,255,255,.16)';
+        var tint=el('div','position:absolute;inset:0;background:linear-gradient(155deg,rgba(45,212,191,.12) 0%,rgba(99,102,241,.18) 42%,rgba(12,10,30,.92) 100%);pointer-events:none');
+        cover.appendChild(tint);
+        var coverName=el('b','position:absolute;left:9px;right:9px;bottom:10px;color:#fff;font-size:clamp(11px,3vw,14px);line-height:1.2;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.8);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;z-index:1',p.name||'İsimsiz liste');
+        cover.appendChild(coverName);
+        var count=el('span','position:absolute;right:6px;top:6px;padding:4px 8px;border-radius:20px;background:linear-gradient(120deg,#7c3aed,#db2777);box-shadow:0 2px 10px rgba(0,0,0,.3);color:#fff;font-size:10px;font-weight:700;z-index:2',String((p.tracks||[]).length)+' şarkı');
         cover.appendChild(count);
         card.appendChild(cover);
-        card.appendChild(el('b','display:block;margin-top:7px;font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis',p.name||'İsimsiz liste'));
         card.appendChild(el('small','display:block;margin-top:3px;color:var(--mut);font-size:11px',String((p.tracks||[]).length)+' şarkı'));
         card.onclick=function(){openPlaylistDetail(i)};
         homeLists.appendChild(card);
