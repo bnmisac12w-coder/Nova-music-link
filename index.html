@@ -550,6 +550,40 @@ function renderAbout(){
   if(!lb||!fb)return;
   lb.innerHTML='';fb.innerHTML='';
   var pl=load();
+  /*nova-home-playlist-squares*/
+  var homeLists=document.getElementById('hLists');
+  if(homeLists){
+    homeLists.innerHTML='';
+    if(!pl.length){
+      homeLists.appendChild(el('div','opacity:.6;font-size:13px;padding:8px 0','Henüz listen yok.'));
+    }else{
+      homeLists.style.cssText='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 4px';
+      pl.forEach(function(p,i){
+        var card=el('button','display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer');
+        var cover=el('div','position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:13px;background:linear-gradient(145deg,rgba(30,215,96,.28),rgba(108,92,231,.32)),var(--panel);display:grid;place-items:center');
+        var art=p.tracks&&p.tracks.length&&p.tracks[0].art;
+        if(art){
+          var img=el('img','width:100%;height:100%;position:absolute;inset:0;object-fit:cover');
+          img.src=art;img.alt='';cover.appendChild(img);
+        }else{
+          var mark=el('div','font-size:34px;font-weight:800;color:var(--g)','♫');
+          cover.appendChild(mark);
+        }
+        var count=el('span','position:absolute;right:6px;top:6px;padding:3px 7px;border-radius:20px;background:rgba(0,0,0,.68);color:#fff;font-size:10px;font-weight:600',String((p.tracks||[]).length));
+        cover.appendChild(count);
+        card.appendChild(cover);
+        card.appendChild(el('b','display:block;margin-top:7px;font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis',p.name||'İsimsiz liste'));
+        card.appendChild(el('small','display:block;margin-top:3px;color:var(--mut);font-size:11px',String((p.tracks||[]).length)+' şarkı'));
+        card.onclick=function(){
+          openI=i;
+          var aboutNav=document.querySelector('button[data-v="about"]');
+          if(aboutNav)aboutNav.click();
+          renderAbout();
+        };
+        homeLists.appendChild(card);
+      });
+    }
+  }
   lb.appendChild(el('div','font-weight:700;font-size:16px;margin-bottom:10px','Listelerim ('+pl.length+')'));
   if(!pl.length)lb.appendChild(el('div','opacity:.6;font-size:13px','Henüz liste yok. Çalardaki liste düğmesiyle oluştur.'));
   pl.forEach(function(p,i){
