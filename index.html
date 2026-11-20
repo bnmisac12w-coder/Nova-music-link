@@ -115,6 +115,18 @@ nav button.on{color:var(--g)}
 .logo{justify-content:flex-start;min-width:0;font-size:clamp(22px,7vw,30px);letter-spacing:.07em;line-height:1;white-space:nowrap;text-align:left}
 header .st+small{font-size:11px!important;letter-spacing:.06em;line-height:1;color:var(--mut)!important}
 
+
+/* Ana sayfa sadeleştirme */
+#hero.home-hero{padding:22px 0 12px}
+#hero.home-hero h1{font-size:clamp(30px,9vw,42px);margin-top:10px;line-height:1.08}
+#v-home>.sec{margin-top:20px}
+#v-home>.sec h2{font-size:23px}
+#v-home .home-more{margin-top:22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 2px;color:var(--mut)}
+#v-home .home-more summary{cursor:pointer;list-style:none;font-size:14px;font-weight:600;color:var(--mut)}
+#v-home .home-more summary::-webkit-details-marker{display:none}
+#v-home .home-more summary::after{content:'＋';float:right;color:var(--g)}
+#v-home .home-more[open] summary::after{content:'−'}
+#v-home .home-more .hrow{padding-top:12px}
 </style>
 <script>/*nova-tema-v1*/(function(){try{var t=localStorage.getItem('nova_theme');if(/^(sakura|cyber|matrix|noel)$/.test(t))document.documentElement.setAttribute('data-theme',t)}catch(e){}})();</script>
 <style>
@@ -196,9 +208,9 @@ html[data-theme=noel]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%
 
 <main>
   <section class="view on" id="v-home">
-    <div id="hero">
-      <div class="eb">YOUR MUSIC. YOUR WORLD.</div>
-      <h1>Müziğin <span>sınırlarını keşfet.</span></h1>
+    <div id="hero" class="home-hero">
+      <div class="eb">NOVA MUSIC</div>
+      <h1>Müziğin <span>burada başlar.</span></h1>
     </div>
     <div id="resWrap" hidden><div class="sec"><div><div class="eb">ARAMA</div><h2>Sonuçlar</h2></div></div><div id="res"></div></div>
     <div class="sec"><div><div class="eb">NOVA SELECTION</div><h2>Trend Liste</h2></div></div>
@@ -206,16 +218,19 @@ html[data-theme=noel]::before{background:url("data:image/svg+xml,%3Csvg%20xmlns%
     <div id="trend" style="display:none"></div><div class="hrow" id="hTrend"></div>
     <style>.hrow{display:flex;gap:12px;overflow-x:auto;padding:14px 0 4px;scrollbar-width:none}.hrow::-webkit-scrollbar{display:none}.hc{flex:0 0 132px;min-width:0;cursor:pointer}.hc img{width:132px;height:132px;border-radius:14px;object-fit:cover;background:var(--panel);display:block}.hc b{display:block;margin-top:8px;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.hc small{display:block;margin-top:2px;color:var(--mut);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}</style>
 
-<div class="sec"><div><div class="eb">SOUNDCLOUD</div><h2>SoundCloud Playlistleri</h2></div></div>
-<div class="hrow" id="hScPlaylists"><div class="empty">Playlistler yükleniyor…</div></div>
+<details class="home-more">
+  <summary>SoundCloud playlistlerini keşfet</summary>
+  <div class="hrow" id="hScPlaylists"><div class="empty">Playlistler yükleniyor…</div></div>
+</details>
 <div class="sec"><div><div class="eb">NOVA MUSIC</div><h2>Son Eklenenler</h2></div></div><div class="hrow" id="hNew"></div>
-    <div class="sec"><div><div class="eb">KEŞFET</div><h2>Şarkı türleri</h2></div></div><div class="hrow" id="hGenres"></div>
+    <details class="home-more">
+      <summary>Şarkı türlerine göz at</summary>
+      <div class="hrow" id="hGenres"></div>
+    </details>
     <div id="genWrap" style="display:none"><div class="sec"><div><div class="eb">TÜR</div><h2 id="genTitle"></h2></div></div><div class="hrow" id="hGen"></div></div>
     <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Listelerim</h2></div></div><div class="hrow" id="hLists"><div class="empty">Henüz listen yok.</div></div>
-    <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Favorilerin</h2></div></div>
-    <div id="fav" style="margin-top:14px"></div>
-    <div class="sec"><div><div class="eb">KÜTÜPHANE</div><h2>Eklediklerim</h2></div></div>
-    <div id="addHome" style="margin-top:14px"></div>
+    <div id="fav" hidden></div>
+    <div id="addHome" hidden></div>
   </section>
   <section class="view" id="v-about">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-top:34px">
