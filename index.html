@@ -476,6 +476,11 @@ function marquee(){
 const fmt=s=>Number.isFinite(Number(s))&&Number(s)>0?Math.floor(Number(s)/60)+':'+String(Math.floor(Number(s)%60)).padStart(2,'0'):'0:00';
 function novaMedia(t,state,position,duration){
   try{
+    if(window.NovaAndroid&&typeof window.NovaAndroid.update==='function'){
+      window.NovaAndroid.update(String(t&&t.name||'NOVA Music'),String(t&&t.artist||'NOVA Music'),String(t&&t.art||''),state==='playing');
+    }
+  }catch(e){}
+  try{
     var ms=navigator.mediaSession;if(!ms)return;
     if(t&&'MediaMetadata'in window){
       var art=t.art||'';
