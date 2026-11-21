@@ -596,7 +596,7 @@ function openPlaylistDetail(index){
   detail.appendChild(back);
   var hero=el('div','display:flex;align-items:center;gap:16px;margin:20px 0 22px');
   var cover=el('div','width:116px;height:116px;flex:none;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,rgba(30,215,96,.28),rgba(108,92,231,.32));display:grid;place-items:center');
-  if(tracks[0]&&tracks[0].art){var image=el('img','width:100%;height:100%;object-fit:cover');image.src=tracks[0].art;cover.appendChild(image)}
+  if(tracks[0]){var image=el('img','width:100%;height:100%;object-fit:cover');setTrackCover(image,tracks[0].name,tracks[0].art);cover.appendChild(image)}
   else cover.appendChild(el('b','font-size:48px;color:#fff','♫'));
   cover.style.position='relative';cover.style.boxShadow='0 10px 28px rgba(99,102,241,.28)';
   cover.appendChild(el('div','position:absolute;inset:0;background:linear-gradient(155deg,rgba(45,212,191,.12),rgba(99,102,241,.18) 40%,rgba(12,10,30,.94))'));
@@ -641,7 +641,7 @@ function renderAbout(){
         var art=p.tracks&&p.tracks.length&&p.tracks[0].art;
         if(art){
           var img=el('img','width:100%;height:100%;position:absolute;inset:0;object-fit:cover');
-          img.src=art;img.alt='';cover.appendChild(img);
+          setTrackCover(img,p.tracks[0].name,art);img.alt='';cover.appendChild(img);
         }else{
           var mark=el('div','font-size:34px;font-weight:800;color:var(--g)','♫');
           cover.appendChild(mark);
@@ -764,7 +764,7 @@ setInterval(()=>{if(!drag&&$('#cropModal').style.display=='flex')sync()},60);
 (function(){
 function hrow(sel,name,emptyMsg){
   var a=(L[name]||[]).slice(0,10),el=$(sel);if(!el)return;
-  el.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="'+name+'" data-hi="'+i+'"><img src="'+esc(t.art)+'" alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">'+emptyMsg+'</div>';
+  el.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="'+name+'" data-hi="'+i+'"><img alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">'+emptyMsg+'</div>';el.querySelectorAll('.hc').forEach(function(card,i){var t=a[i],img=card.querySelector('img');if(t&&img)setTrackCover(img,t.name,t.art)});
 }
 function homeRows(){L.recentAdd=(L.new||[]).filter(function(t){return t.createdAt&&Date.now()-t.createdAt<=5*24*60*60*1000});hrow('#hTrend','trend','Yükleniyor…');hrow('#hNew','recentAdd','Son 5 günde eklediğin şarkı yok.')}
     window.refreshHomeRows=homeRows;
@@ -794,7 +794,7 @@ bar.onclick=async function(e){
     L.gen=clean(r.data);
   }catch(err){L.gen=[]}
   var a=L.gen.slice(0,15);
-  row.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="gen" data-hi="'+i+'"><img src="'+esc(t.art)+'" alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">Bu türde şarkı bulunamadı.</div>';
+  row.innerHTML=a.length?a.map(function(t,i){return '<div class="hc" data-hl="gen" data-hi="'+i+'"><img alt="" loading="lazy"><b>'+esc(t.name)+'</b><small>'+esc(t.artist)+'</small></div>'}).join(''):'<div class="empty">Bu türde şarkı bulunamadı.</div>';row.querySelectorAll('.hc').forEach(function(card,i){var t=a[i],img=card.querySelector('img');if(t&&img)setTrackCover(img,t.name,t.art)});
 };
 })();
 $('#backAbout').onclick=()=>{$('#v-settings').classList.remove('on');$('#v-about').classList.add('on');scrollTo(0,0)};
